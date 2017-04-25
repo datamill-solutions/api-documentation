@@ -1,0 +1,3591 @@
+#####################################################################
+# Swagger version
+#####################################################################
+
+swagger: '2.0'
+
+#####################################################################
+# Info
+#####################################################################
+
+info:
+  title: "/data.mill for applications"
+  description: |
+    **&#47;data.mill for applications** is the most versatile and powerful API for all aspects of data quality in your business application.
+
+    Use **&#47;data.mill** to check, correct and enrich personal data and business information. The internationally applicable functions can be integrated easily into existing applications, whether desktop, online or mobile and thus enable you to professionally improve your customer or supplier database, directly in your system. Due to **&#47;data.mill**'s pay-per-use credit model there are no setup fees or fixed monthly subscription fees.
+
+    **&#47;data.mill** is constantly evolving and upgraded with the latest technology and data services available on the market.
+  termsOfService: https://cdn.methis.at/agreements/eula/master/eula_datamill_en.pdf
+  contact:
+    name: "/data.mill support center"
+    url: https://datamill.solutions/en#contact-form
+    email: info@datamill.solutions
+  license:
+    name: Proprietary License
+    url: https://cdn.methis.at/agreements/eula/master/eula_datamill_en.pdf
+  version: "1.6.4"
+
+#####################################################################
+# all paths will be relative to the basePath specified
+#####################################################################
+
+host: api.methis.at
+#basePath:
+schemes:
+- https
+
+#####################################################################
+# Request types for the api
+#####################################################################
+
+consumes:
+  - multipart/form-data
+
+#####################################################################
+# Response types of the api
+#####################################################################
+
+produces:
+  - application/json
+
+#####################################################################
+# tags are used for organizing operations
+#####################################################################
+
+tags:
+- name: Address
+  description: Transformation functions to format and validate physical postal addresses
+- name: BIC
+  description: Transformation functions to format and validate BIC numbers
+- name: Convert
+  description: Transformation functions to format and manipulate texts
+- name: Delivery information
+  description: Transformation functions to check for undeliverable contacts
+- name: DUNS
+  description: Transformation functions to search and validate company information by duns number
+- name: Email
+  description: Transformation functions to check email addresses
+- name: First name
+  description: Transformation functions to extract first names
+- name: Gender
+  description: Transformation functions to recognize gender by first name
+- name: IBAN
+  description: Transformation functions to format and validate IBAN
+- name: Phone number
+  description: Transformation functions to format and validate phone number, verify mobile numbers and many more
+- name: URL
+  description: Transformation functions to validate web resources
+- name: VAT
+  description: Transformation functions to format and validate VAT numbers, search companies by VAT of find VAT by company name
+
+#####################################################################
+# Definition for paths available through this api
+#####################################################################
+
+paths:
+
+  "/address/housenumber/extract":
+    post:
+      tags:
+        - Address
+      summary: Try to extract house number from street information
+      description: |
+        Find and extract the house number based on partial address information. The result is an extracted street name, house number and additional house number information (e.g. Apartment, Floor, Room).
+      externalDocs:
+        description: More information
+        url: https://gateway.methis.at/address/housenumber/extract
+      operationId: extractHouseNumber
+      parameters:
+        - $ref: '#/parameters/License'
+        - $ref: '#/parameters/Guid'
+        - name: street
+          in: formData
+          description: Free-form text containing the street name and optional the house number including additional house number information. The key is required if housenumber is empty or unset.
+          required: false
+          type: string
+          minLength: 0
+          maxLength: 255
+        - name: housenumber
+          in: formData
+          description: Free-form text containing the house number including additional house number information and optional the street name. The key is required if street is empty or unset.
+          required: false
+          type: string
+          minLength: 0
+          maxLength: 255
+      responses:
+        200:
+          $ref: '#/responses/AddressHouseNumberExtractResponse'
+        401:
+          $ref: '#/responses/ErrorUnauthorized'
+        402:
+          $ref: '#/responses/ErrorQuotaExceeded'
+        403:
+          $ref: '#/responses/ErrorForbidden'
+        404:
+          $ref: '#/responses/ErrorNotFound'
+        405:
+          $ref: '#/responses/ErrorNotAllowed'
+        412:
+          $ref: '#/responses/ErrorIncorrectParameters'
+        428:
+          $ref: '#/responses/ErrorMissingParameters'
+        500:
+          $ref: '#/responses/ErrorInternalServerError'
+        503:
+          $ref: '#/responses/ErrorServiceTemporaryUnavailable'
+      deprecated: false
+
+  "/address/locate":
+    post:
+      tags:
+        - Address
+      summary:  Reverse address lookup
+      description: |
+        Resolve an address corresponding to a given geo-coordinate. The result is a single record which matches the given latitude and longitude.
+      externalDocs:
+        description: More information
+        url: https://gateway.methis.at/address/locate
+      operationId: locateAddress
+      parameters:
+        - $ref: '#/parameters/License'
+        - $ref: '#/parameters/Guid'
+        - name: latitude
+          in: formData
+          description: Latitude of the address (use a dot as decimal point)
+          required: true
+          type: string
+          minLength: 1
+          maxLength: 15
+        - name: longitude
+          in: formData
+          description: Longitude of the address (use a dot as decimal point)
+          required: true
+          type: string
+          minLength: 1
+          maxLength: 15
+        - $ref: '#/parameters/Locale'
+      responses:
+        200:
+          $ref: '#/responses/AddressLocateResponse'
+        401:
+          $ref: '#/responses/ErrorUnauthorized'
+        402:
+          $ref: '#/responses/ErrorQuotaExceeded'
+        403:
+          $ref: '#/responses/ErrorForbidden'
+        404:
+          $ref: '#/responses/ErrorNotFound'
+        405:
+          $ref: '#/responses/ErrorNotAllowed'
+        412:
+          $ref: '#/responses/ErrorIncorrectParameters'
+        428:
+          $ref: '#/responses/ErrorMissingParameters'
+        500:
+          $ref: '#/responses/ErrorInternalServerError'
+        503:
+          $ref: '#/responses/ErrorServiceTemporaryUnavailable'
+      deprecated: false
+
+  "/address/search":
+    post:
+      tags:
+        - Address
+      summary: Lookup physical postal address
+      description: |
+        Find geo-location based on unstructured (single-line entry, un-qualified) or based on structured (qualified) address information. The result is a single record which matches the given geo-location. The response depends on the data quality of the request. If the request contains too many typos the response keys may be empty.
+
+        The unstructured query determines each address part by its own and afterwards finds the closest geo-location. It should only be used if you do not know which address information fits in which query parameter.
+        The structured query provides an additional logic for specific countries to improve the result of the determined geo-location. Please consider that if you do not provide a country name/code the result may end in a different country because the same city + street combination may exist in multiple countries.
+      externalDocs:
+        description: More information
+        url: https://gateway.methis.at/address/search
+      operationId: searchAddress
+      parameters:
+        - $ref: '#/parameters/License'
+        - $ref: '#/parameters/Guid'
+        - name: address
+          in: formData
+          description: |
+            Unstructured query parameter. Free-form text containing address elements (e.g. city, postal code, street, house number).
+            Each element is separated using a whitespace. The order of the elements does not matter.
+            You can specify the 'address' parameter by itself or you can specify it with other parameters to narrow your search.
+          required: false
+          type: string
+          minLength: 1
+          maxLength: 255
+        - name: country
+          in: formData
+          description: Specify the country using the country code (ISO 3166-1 alpha-3) or the country name.
+          required: false
+          type: string
+          minLength: 1
+          maxLength: 255
+        - name: state
+          in: formData
+          description: First subdivision level below the country. Specify the state using full or abbreviated notation.
+          required: false
+          type: string
+          minLength: 1
+          maxLength: 255
+        - name: county
+          in: formData
+          description: Second subdivision level below the country. Depending on the admin hierarchy in a country this level might not be applicable.
+          required: false
+          type: string
+          minLength: 1
+          maxLength: 255
+        - name: city
+          in: formData
+          description: The city name.
+          required: false
+          type: string
+          minLength: 1
+          maxLength: 255
+        - name: zip
+          in: formData
+          description: Postal code defined by the government of the country.
+          required: false
+          type: string
+          minLength: 1
+          maxLength: 255
+        - name: district
+          in: formData
+          description: Subdivision level below the city. Depending on the admin hierarchy in a country this level might not be applicable.
+          required: false
+          type: string
+          minLength: 1
+          maxLength: 255
+        - name: street
+          in: formData
+          description: The street name.
+          required: false
+          type: string
+          minLength: 1
+          maxLength: 255
+        - name: housenumber
+          in: formData
+          description: The house number or building name.
+          required: false
+          type: string
+          minLength: 1
+          maxLength: 255
+        - $ref: '#/parameters/Locale'
+      responses:
+        200:
+          $ref: '#/responses/AddressSearchResponse'
+        401:
+          $ref: '#/responses/ErrorUnauthorized'
+        402:
+          $ref: '#/responses/ErrorQuotaExceeded'
+        403:
+          $ref: '#/responses/ErrorForbidden'
+        404:
+          $ref: '#/responses/ErrorNotFound'
+        405:
+          $ref: '#/responses/ErrorNotAllowed'
+        412:
+          $ref: '#/responses/ErrorIncorrectParameters'
+        428:
+          $ref: '#/responses/ErrorMissingParameters'
+        500:
+          $ref: '#/responses/ErrorInternalServerError'
+        503:
+          $ref: '#/responses/ErrorServiceTemporaryUnavailable'
+      deprecated: false
+
+  "/address/search/multiple":
+    post:
+      tags:
+        - Address
+      summary: Address lookup with multiple possible results
+      description: |
+        Find multiple geo-locations based on unstructured (single-line entry, un-qualified) address information.
+        The result is a set of records which matches the given geo-location. The response depends on the data quality of the request.
+        If the request contains too many typo errors the response keys may be empty.
+      externalDocs:
+        description: More information
+        url: https://gateway.methis.at/address/search/multiple
+      operationId: searchAddressMultiple
+      parameters:
+        - $ref: '#/parameters/License'
+        - $ref: '#/parameters/Guid'
+        - name: address
+          in: formData
+          description: Free-form text containing address elements (e.g. city, postal code, street, house number). Each element is separated using a whitespace. The order of the elements does not matter.
+          required: true
+          type: string
+          minLength: 1
+          maxLength: 255
+        - $ref: '#/parameters/Locale'
+      responses:
+        200:
+          $ref: '#/responses/AddressSearchMultipleResponse'
+        401:
+          $ref: '#/responses/ErrorUnauthorized'
+        402:
+          $ref: '#/responses/ErrorQuotaExceeded'
+        403:
+          $ref: '#/responses/ErrorForbidden'
+        404:
+          $ref: '#/responses/ErrorNotFound'
+        405:
+          $ref: '#/responses/ErrorNotAllowed'
+        412:
+          $ref: '#/responses/ErrorIncorrectParameters'
+        428:
+          $ref: '#/responses/ErrorMissingParameters'
+        500:
+          $ref: '#/responses/ErrorInternalServerError'
+        503:
+          $ref: '#/responses/ErrorServiceTemporaryUnavailable'
+      deprecated: false
+
+  "/bic/check":
+    post:
+      tags:
+        - BIC
+      summary: Check BIC for spelling
+      description: |
+        Checks the spelling of a given BIC (Business Identifier Code), also known as SWIFT code which is defined in the ISO 9362. The function does not verify if the BIC really exists, instead the format is checked for validity only.
+      externalDocs:
+        description: More information
+        url: https://gateway.methis.at/bic/check
+      operationId: checkBIC
+      parameters:
+        - $ref: '#/parameters/License'
+        - $ref: '#/parameters/Guid'
+        - name: bic
+          in: formData
+          description: BIC to be checked
+          required: true
+          type: string
+          minLength: 1
+          maxLength: 255
+      responses:
+        200:
+          $ref: '#/responses/BicCheckResponse'
+        401:
+          $ref: '#/responses/ErrorUnauthorized'
+        402:
+          $ref: '#/responses/ErrorQuotaExceeded'
+        403:
+          $ref: '#/responses/ErrorForbidden'
+        404:
+          $ref: '#/responses/ErrorNotFound'
+        405:
+          $ref: '#/responses/ErrorNotAllowed'
+        412:
+          $ref: '#/responses/ErrorIncorrectParameters'
+        428:
+          $ref: '#/responses/ErrorMissingParameters'
+        500:
+          $ref: '#/responses/ErrorInternalServerError'
+        503:
+          $ref: '#/responses/ErrorServiceTemporaryUnavailable'
+      deprecated: false
+      
+  "/business-data/duns/rating":
+    post:
+      tags:
+        - DUNS
+      summary: Get marketing information by DUNS number
+      description: |
+        Get marketing information about a company (credit rating, PAYDEX score, demographic information, ...) based on the company's D-U-N-S number. In order to get the marketing information each request requires a reason.
+      externalDocs:
+        description: More information
+        url: https://gateway.methis.at/business-data/duns/rating
+      operationId: getDUNSRating
+      parameters:
+        - $ref: '#/parameters/License'
+        - $ref: '#/parameters/Guid'
+        - $ref: '#/parameters/DunsNumber'
+        - $ref: '#/parameters/DunsReasonCode'
+      responses:
+        200:
+          $ref: '#/responses/BusinessDataDunsRatingResponse'
+        401:
+          $ref: '#/responses/ErrorUnauthorized'
+        402:
+          $ref: '#/responses/ErrorQuotaExceeded'
+        403:
+          $ref: '#/responses/ErrorForbidden'
+        404:
+          $ref: '#/responses/ErrorNotFound'
+        405:
+          $ref: '#/responses/ErrorNotAllowed'
+        412:
+          $ref: '#/responses/ErrorIncorrectParameters'
+        428:
+          $ref: '#/responses/ErrorMissingParameters'
+        500:
+          $ref: '#/responses/ErrorInternalServerError'
+        503:
+          $ref: '#/responses/ErrorServiceTemporaryUnavailable'
+      deprecated: false
+      
+  "/business-data/duns/resolve":
+    post:
+      tags:
+        - DUNS
+      summary: Resolve company information by DUNS number
+      description: |
+        Resolves company information (official name, postal address, annual turnover, number of employees, ...) based on 
+        the company's D-U-N-S number. In order to get the company information each request requires a reason.
+      externalDocs:
+        description: More information
+        url: https://gateway.methis.at/business-data/duns/resolve
+      operationId: resolveDUNS
+      parameters:
+        - $ref: '#/parameters/License'
+        - $ref: '#/parameters/Guid'
+        - $ref: '#/parameters/DunsNumber'
+        - $ref: '#/parameters/DunsReasonCode'
+      responses:
+        200:
+          $ref: '#/responses/BusinessDataDunsResolveResponse'
+        401:
+          $ref: '#/responses/ErrorUnauthorized'
+        402:
+          $ref: '#/responses/ErrorQuotaExceeded'
+        403:
+          $ref: '#/responses/ErrorForbidden'
+        404:
+          $ref: '#/responses/ErrorNotFound'
+        405:
+          $ref: '#/responses/ErrorNotAllowed'
+        412:
+          $ref: '#/responses/ErrorIncorrectParameters'
+        428:
+          $ref: '#/responses/ErrorMissingParameters'
+        500:
+          $ref: '#/responses/ErrorInternalServerError'
+        503:
+          $ref: '#/responses/ErrorServiceTemporaryUnavailable'
+      deprecated: false
+
+  "/business-data/duns/search":
+    post:
+      tags:
+        - DUNS
+      summary: Find DUNS number and company information by name
+      description: |
+        Finds the D-U-N-S number and additional company information by the company's name. Optionally a filter for the headquarters location can be added to get a more accurate response.
+      externalDocs:
+        description: More information
+        url: https://gateway.methis.at/business-data/duns/search
+      operationId: searchDUNS
+      parameters:
+        - $ref: '#/parameters/License'
+        - $ref: '#/parameters/Guid'
+        - name: company_name
+          in: formData
+          description: The company name you are looking for or relevant parts of it (may be empty if the duns_number is set)
+          required: false
+          type: string
+          minLength: 1
+          maxLength: 255
+        - $ref: '#/parameters/Country_Code'
+        - name: duns_number
+          in: formData
+          description: The D-U-N-S number you are looking for detailed information (may be empty if the company_name and country_code are set)
+          type: string
+          minLength: 9
+          maxLength: 9
+        - name: state
+          in: formData
+          description: Filter to get only companies which matches the specified state (required for United States)
+          type: string
+          minLength: 0
+          maxLength: 255
+        - name: city
+          in: formData
+          description: Filter to get only companies which matches the specified city
+          type: string
+          minLength: 0
+          maxLength: 255
+        - name: zip
+          in: formData
+          description: Filter to get only companies which matches the specified postal code
+          type: string
+          minLength: 0
+          maxLength: 255
+        - name: street
+          in: formData
+          description: Filter to get only companies which matches the specified street
+          type: string
+          minLength: 0
+          maxLength: 255
+      responses:
+        200:
+          $ref: '#/responses/BusinessDataDunsSearchResponse'
+        401:
+          $ref: '#/responses/ErrorUnauthorized'
+        402:
+          $ref: '#/responses/ErrorQuotaExceeded'
+        403:
+          $ref: '#/responses/ErrorForbidden'
+        404:
+          $ref: '#/responses/ErrorNotFound'
+        405:
+          $ref: '#/responses/ErrorNotAllowed'
+        412:
+          $ref: '#/responses/ErrorIncorrectParameters'
+        428:
+          $ref: '#/responses/ErrorMissingParameters'
+        500:
+          $ref: '#/responses/ErrorInternalServerError'
+        503:
+          $ref: '#/responses/ErrorServiceTemporaryUnavailable'
+      deprecated: false
+
+  "/business-data/undeliverable-contacts/search":
+    post:
+      tags:
+        - Delivery information
+      summary: Find moved and deceased contacts
+      description: |
+        Checks if the postal address of a person identified by its full name is invalid (moved to a new address or deceased).
+        This function does NOT verify/check if a known postal address is still valid, instead it only checks if the person
+        is moved to another address or is deceased and therefore a mail will result in an undeliverable state.
+      externalDocs:
+        description: More information
+        url: https://gateway.methis.at/business-data/undeliverable-contacts/search
+      operationId: searchUndeliverableContact
+      parameters:
+        - $ref: '#/parameters/License'
+        - $ref: '#/parameters/Guid'
+        - name: first_name
+          in: formData
+          description: The person's first name
+          required: true
+          type: string
+          minLength: 1
+          maxLength: 30
+        - name: last_name
+          in: formData
+          description: The person's last name
+          required: true
+          type: string
+          minLength: 1
+          maxLength: 30
+        - $ref: '#/parameters/Country_Code'
+        - name: zip
+          in: formData
+          description: Last known postal code the person lives in
+          required: true
+          type: string
+          minLength: 1
+          maxLength: 5
+        - name: street
+          in: formData
+          description: Last known street name the person lives in
+          required: true
+          type: string
+          minLength: 1
+          maxLength: 40
+        - name: reason
+          in: formData
+          description: Free-form text written in english why you submit the query.
+          required: true
+          type: string
+          minLength: 1
+          maxLength: 100
+      responses:
+        200:
+          $ref: '#/responses/BusinessDataUndeliverableContactsSearchResponse'
+        401:
+          $ref: '#/responses/ErrorUnauthorized'
+        402:
+          $ref: '#/responses/ErrorQuotaExceeded'
+        403:
+          $ref: '#/responses/ErrorForbidden'
+        404:
+          $ref: '#/responses/ErrorNotFound'
+        405:
+          $ref: '#/responses/ErrorNotAllowed'
+        412:
+          $ref: '#/responses/ErrorIncorrectParameters'
+        428:
+          $ref: '#/responses/ErrorMissingParameters'
+        500:
+          $ref: '#/responses/ErrorInternalServerError'
+        503:
+          $ref: '#/responses/ErrorServiceTemporaryUnavailable'
+      deprecated: false
+
+  "/convert/capitalfirst":
+    post:
+      tags:
+        - Convert
+      summary: Convert any string to capitalize words
+      description: |
+        Changes any word of a given text so that the first letter is capitalized and all the others turned into lower case. Special proper names, like "DiCaprio" are detected and ignored.
+      externalDocs:
+        description: More information
+        url: https://gateway.methis.at/convert/capitalfirst
+      operationId: convertCapitalFirst
+      parameters:
+        - $ref: '#/parameters/License'
+        - $ref: '#/parameters/Guid'
+        - name: text
+          in: formData
+          description: Free-form text to be converted.
+          required: true
+          type: string
+          minLength: 1
+          maxLength: 2048
+      responses:
+        200:
+          $ref: '#/responses/ConvertCapitalFirstResponse'
+        401:
+          $ref: '#/responses/ErrorUnauthorized'
+        402:
+          $ref: '#/responses/ErrorQuotaExceeded'
+        403:
+          $ref: '#/responses/ErrorForbidden'
+        404:
+          $ref: '#/responses/ErrorNotFound'
+        405:
+          $ref: '#/responses/ErrorNotAllowed'
+        412:
+          $ref: '#/responses/ErrorIncorrectParameters'
+        428:
+          $ref: '#/responses/ErrorMissingParameters'
+        500:
+          $ref: '#/responses/ErrorInternalServerError'
+        503:
+          $ref: '#/responses/ErrorServiceTemporaryUnavailable'
+      deprecated: false
+
+  "/convert/lowercase":
+    post:
+      tags:
+        - Convert
+      summary: Convert any string to lower case
+      description: |
+        Converts all letters of any word in a given string in the respective lowercase.
+      externalDocs:
+        description: More information
+        url: https://gateway.methis.at/convert/lowercase
+      operationId: convertLowerCase
+      parameters:
+        - $ref: '#/parameters/License'
+        - $ref: '#/parameters/Guid'
+        - name: text
+          in: formData
+          description: Free-form text to be converted.
+          required: true
+          type: string
+          minLength: 1
+          maxLength: 2048
+      responses:
+        200:
+          $ref: '#/responses/ConvertLowerCaseResponse'
+        401:
+          $ref: '#/responses/ErrorUnauthorized'
+        402:
+          $ref: '#/responses/ErrorQuotaExceeded'
+        403:
+          $ref: '#/responses/ErrorForbidden'
+        404:
+          $ref: '#/responses/ErrorNotFound'
+        405:
+          $ref: '#/responses/ErrorNotAllowed'
+        412:
+          $ref: '#/responses/ErrorIncorrectParameters'
+        428:
+          $ref: '#/responses/ErrorMissingParameters'
+        500:
+          $ref: '#/responses/ErrorInternalServerError'
+        503:
+          $ref: '#/responses/ErrorServiceTemporaryUnavailable'
+      deprecated: false
+
+  "/convert/uppercase":
+    post:
+      tags:
+        - Convert
+      summary: Convert any string to upper case
+      description: |
+        Converts all letters of any word in a given string in the respective capital.
+      externalDocs:
+        description: More information
+        url: https://gateway.methis.at/convert/uppercase
+      operationId: convertUpperCase
+      parameters:
+        - $ref: '#/parameters/License'
+        - $ref: '#/parameters/Guid'
+        - name: text
+          in: formData
+          description: Free-form text to be converted.
+          required: true
+          type: string
+          minLength: 1
+          maxLength: 2048
+      responses:
+        200:
+          $ref: '#/responses/ConvertUpperCaseResponse'
+        401:
+          $ref: '#/responses/ErrorUnauthorized'
+        402:
+          $ref: '#/responses/ErrorQuotaExceeded'
+        403:
+          $ref: '#/responses/ErrorForbidden'
+        404:
+          $ref: '#/responses/ErrorNotFound'
+        405:
+          $ref: '#/responses/ErrorNotAllowed'
+        412:
+          $ref: '#/responses/ErrorIncorrectParameters'
+        428:
+          $ref: '#/responses/ErrorMissingParameters'
+        500:
+          $ref: '#/responses/ErrorInternalServerError'
+        503:
+          $ref: '#/responses/ErrorServiceTemporaryUnavailable'
+      deprecated: false
+
+  "/convert/wrap":
+    post:
+      tags:
+        - Convert
+      summary: Wrap text
+      description: |
+        Breaks a text into multiple newlines. Each line will be separated by a \r (CR, ASCII 13) and \n (LF, ASCII 10) character. The number of characters a line break will be inserted after can be justified.
+      externalDocs:
+        description: More information
+        url: https://gateway.methis.at/convert/wrap
+      operationId: convertWrap
+      parameters:
+        - $ref: '#/parameters/License'
+        - $ref: '#/parameters/Guid'
+        - name: text
+          in: formData
+          description: Fre-form text to be wrapped.
+          required: true
+          type: string
+          minLength: 1
+          maxLength: 102400
+        - name: limit
+          in: formData
+          description: The number of characters a linefeed will be inserted after (maximum character length per line).
+          required: true
+          type: integer
+          minLength: 1
+          maxLength: 102400
+        - name: mode
+          in: formData
+          description: |
+            The mode how the linefeed will be inserted. Either before (default) the current word, after the current word or exactly after the character. Possible values are **before** to break before last word, **after** to break after last word, **exact** to break at limit.
+          required: false
+          type: string
+          minLength: 5
+          maxLength: 6
+          enum:
+            - before
+            - after
+            - exact
+        - name: linebreak
+          in: formData
+          description: |
+            Defines which line separator should be used. Possible values are **full** for *\r\n*, **single** for *\n*, **html** for *&lt;br&gt;*
+          required: false
+          type: string
+          minLength: 4
+          maxLength: 6
+          enum:
+            - full
+            - single
+            - html
+      responses:
+        200:
+          $ref: '#/responses/ConvertWrapResponse'
+        401:
+          $ref: '#/responses/ErrorUnauthorized'
+        402:
+          $ref: '#/responses/ErrorQuotaExceeded'
+        403:
+          $ref: '#/responses/ErrorForbidden'
+        404:
+          $ref: '#/responses/ErrorNotFound'
+        405:
+          $ref: '#/responses/ErrorNotAllowed'
+        412:
+          $ref: '#/responses/ErrorIncorrectParameters'
+        428:
+          $ref: '#/responses/ErrorMissingParameters'
+        500:
+          $ref: '#/responses/ErrorInternalServerError'
+        503:
+          $ref: '#/responses/ErrorServiceTemporaryUnavailable'
+      deprecated: false
+
+  "/email/domain/check":
+    post:
+      tags:
+        - Email
+      summary: Check email syntax and mail server domain
+      description: |
+        Checks the spelling of an email address to detect typos and spelling errors.
+        In addition if the email address has a valid syntax its mail server is determined and checked for existence.
+        The mail server itself will be compared with a list of disposable providers to detect addresses with a short lifetime.
+      externalDocs:
+        description: More information
+        url: https://gateway.methis.at/email/domain/check
+      operationId: checkEmailDomain
+      parameters:
+        - $ref: '#/parameters/License'
+        - $ref: '#/parameters/Guid'
+        - name: email
+          in: formData
+          description: The email address to be checked
+          required: true
+          type: string
+          minLength: 1
+          maxLength: 320
+      responses:
+        200:
+          $ref: '#/responses/EmailDomainCheckResponse'
+        401:
+          $ref: '#/responses/ErrorUnauthorized'
+        402:
+          $ref: '#/responses/ErrorQuotaExceeded'
+        403:
+          $ref: '#/responses/ErrorForbidden'
+        404:
+          $ref: '#/responses/ErrorNotFound'
+        405:
+          $ref: '#/responses/ErrorNotAllowed'
+        412:
+          $ref: '#/responses/ErrorIncorrectParameters'
+        428:
+          $ref: '#/responses/ErrorMissingParameters'
+        500:
+          $ref: '#/responses/ErrorInternalServerError'
+        503:
+          $ref: '#/responses/ErrorServiceTemporaryUnavailable'
+      deprecated: false
+
+  "/email/extended/check":
+    post:
+      tags:
+        - Email
+      summary: Check email syntax, mail server domain and mailbox itself
+      description: |
+        Checks the spelling of an email address to detect typos and spelling errors. If the email address has a valid
+        syntax its mail server is determined and checked for existence. The mail server itself will be compared with a
+        list of disposable providers to detect addresses with a short lifetime. Additionally the mail server will be
+        checked if an email for the given mailbox can be received.
+      externalDocs:
+        description: More information
+        url: https://gateway.methis.at/email/extended/check
+      operationId: checkEmailMailbox
+      parameters:
+        - $ref: '#/parameters/License'
+        - $ref: '#/parameters/Guid'
+        - name: email
+          in: formData
+          description: The email address to be checked
+          required: true
+          type: string
+          minLength: 1
+          maxLength: 320
+      responses:
+        200:
+          $ref: '#/responses/EmailExtendedCheckResponse'
+        401:
+          $ref: '#/responses/ErrorUnauthorized'
+        402:
+          $ref: '#/responses/ErrorQuotaExceeded'
+        403:
+          $ref: '#/responses/ErrorForbidden'
+        404:
+          $ref: '#/responses/ErrorNotFound'
+        405:
+          $ref: '#/responses/ErrorNotAllowed'
+        412:
+          $ref: '#/responses/ErrorIncorrectParameters'
+        428:
+          $ref: '#/responses/ErrorMissingParameters'
+        500:
+          $ref: '#/responses/ErrorInternalServerError'
+        503:
+          $ref: '#/responses/ErrorServiceTemporaryUnavailable'
+      deprecated: false
+
+  "/email/syntax/check":
+    post:
+      tags:
+        - Email
+      summary: Check email syntax
+      description: |
+        Checks the spelling of an email address to detect typos and spelling errors.
+      externalDocs:
+        description: More information
+        url: https://gateway.methis.at/email/syntax/check
+      operationId: checkEmailSyntax
+      parameters:
+        - $ref: '#/parameters/License'
+        - $ref: '#/parameters/Guid'
+        - name: email
+          in: formData
+          description: The email address to be checked
+          required: true
+          type: string
+          minLength: 1
+          maxLength: 320
+      responses:
+        200:
+          $ref: '#/responses/EmailSyntaxCheckResponse'
+        401:
+          $ref: '#/responses/ErrorUnauthorized'
+        402:
+          $ref: '#/responses/ErrorQuotaExceeded'
+        403:
+          $ref: '#/responses/ErrorForbidden'
+        404:
+          $ref: '#/responses/ErrorNotFound'
+        405:
+          $ref: '#/responses/ErrorNotAllowed'
+        412:
+          $ref: '#/responses/ErrorIncorrectParameters'
+        428:
+          $ref: '#/responses/ErrorMissingParameters'
+        500:
+          $ref: '#/responses/ErrorInternalServerError'
+        503:
+          $ref: '#/responses/ErrorServiceTemporaryUnavailable'
+      deprecated: false
+
+  "/firstname/get":
+    post:
+      tags:
+        - First name
+      summary: Recognize and extract first names
+      description: |
+        Detects all first names in a given sting (e.g. a person's name) and extracts them. (Works only with common first names in Germany, Austria and Switzerland)
+      externalDocs:
+        description: More information
+        url: https://gateway.methis.at/firstname/get
+      operationId: getFirstNames
+      parameters:
+        - $ref: '#/parameters/License'
+        - $ref: '#/parameters/Guid'
+        - name: name
+          in: formData
+          description: Full name to detect all first names and extract them
+          required: true
+          type: string
+          minLength: 3
+          maxLength: 255
+      responses:
+        200:
+          $ref: '#/responses/FirstNameGetResponse'
+        401:
+          $ref: '#/responses/ErrorUnauthorized'
+        402:
+          $ref: '#/responses/ErrorQuotaExceeded'
+        403:
+          $ref: '#/responses/ErrorForbidden'
+        404:
+          $ref: '#/responses/ErrorNotFound'
+        405:
+          $ref: '#/responses/ErrorNotAllowed'
+        412:
+          $ref: '#/responses/ErrorIncorrectParameters'
+        428:
+          $ref: '#/responses/ErrorMissingParameters'
+        500:
+          $ref: '#/responses/ErrorInternalServerError'
+        503:
+          $ref: '#/responses/ErrorServiceTemporaryUnavailable'
+      deprecated: false
+
+  "/gender/extended/get":
+    post:
+      tags:
+        - Gender
+      summary: Recognize gender by first name (advanced)
+      description: Recognizes the gender of a given first name considering country specific peculiarities.
+      externalDocs:
+        description: More information
+        url: https://gateway.methis.at/gender/extended/get
+      operationId: getGenderExtended
+      parameters:
+        - $ref: '#/parameters/License'
+        - $ref: '#/parameters/Guid'
+        - name: firstname
+          in: formData
+          description: First name to recognize gender.
+          required: true
+          type: string
+          minLength: 1
+          maxLength: 128
+        - $ref: '#/parameters/CountryCode'
+      responses:
+        200:
+          $ref: '#/responses/GenderExtendedGetResponse'
+        401:
+          $ref: '#/responses/ErrorUnauthorized'
+        402:
+          $ref: '#/responses/ErrorQuotaExceeded'
+        403:
+          $ref: '#/responses/ErrorForbidden'
+        404:
+          $ref: '#/responses/ErrorNotFound'
+        405:
+          $ref: '#/responses/ErrorNotAllowed'
+        412:
+          $ref: '#/responses/ErrorIncorrectParameters'
+        428:
+          $ref: '#/responses/ErrorMissingParameters'
+        500:
+          $ref: '#/responses/ErrorInternalServerError'
+        503:
+          $ref: '#/responses/ErrorServiceTemporaryUnavailable'
+      deprecated: false
+
+  "/gender/get":
+    post:
+      tags:
+        - Gender
+      summary: Recognize gender by first name
+      description: |
+        Recognizes the gender of a given first name. (Works only with common first names in Germany, Austria and Switzerland)
+      externalDocs:
+        description: More information
+        url: https://gateway.methis.at/gender/get
+      operationId: getGender
+      parameters:
+        - $ref: '#/parameters/License'
+        - $ref: '#/parameters/Guid'
+        - name: firstname
+          in: formData
+          description: First name to recognize gender.
+          required: true
+          type: string
+          minLength: 1
+          maxLength: 128
+      responses:
+        200:
+          $ref: '#/responses/GenderGetResponse'
+        401:
+          $ref: '#/responses/ErrorUnauthorized'
+        402:
+          $ref: '#/responses/ErrorQuotaExceeded'
+        403:
+          $ref: '#/responses/ErrorForbidden'
+        404:
+          $ref: '#/responses/ErrorNotFound'
+        405:
+          $ref: '#/responses/ErrorNotAllowed'
+        412:
+          $ref: '#/responses/ErrorIncorrectParameters'
+        428:
+          $ref: '#/responses/ErrorMissingParameters'
+        500:
+          $ref: '#/responses/ErrorInternalServerError'
+        503:
+          $ref: '#/responses/ErrorServiceTemporaryUnavailable'
+      deprecated: false
+
+  "/iban/check":
+    post:
+      tags:
+        - IBAN
+      summary: Check IBAN for spelling
+      description: |
+        Checks the spelling, country code and checksum of an IBAN (International Bank Account Number). The IBAN is an internationally agreed system of identifying bank accounts across national borders. The function does not verify if the IBAN really exists, instead the format is checked for validity only.
+      externalDocs:
+        description: More information
+        url: https://gateway.methis.at/iban/check
+      operationId: checkIBAN
+      parameters:
+        - $ref: '#/parameters/License'
+        - $ref: '#/parameters/Guid'
+        - name: iban
+          in: formData
+          description: IBAN to be checked.
+          required: true
+          type: string
+          minLength: 1
+          maxLength: 255
+      responses:
+        200:
+          $ref: '#/responses/IbanCheckResponse'
+        401:
+          $ref: '#/responses/ErrorUnauthorized'
+        402:
+          $ref: '#/responses/ErrorQuotaExceeded'
+        403:
+          $ref: '#/responses/ErrorForbidden'
+        404:
+          $ref: '#/responses/ErrorNotFound'
+        405:
+          $ref: '#/responses/ErrorNotAllowed'
+        412:
+          $ref: '#/responses/ErrorIncorrectParameters'
+        428:
+          $ref: '#/responses/ErrorMissingParameters'
+        500:
+          $ref: '#/responses/ErrorInternalServerError'
+        503:
+          $ref: '#/responses/ErrorServiceTemporaryUnavailable'
+      deprecated: false
+
+  "/phone/countrycode/get":
+    post:
+      tags:
+        - Phone number
+      summary: International and national dial prefix
+      description: Resolves the national and international dial prefix for a country specified by the given ISO country code.
+      externalDocs:
+        description: More information
+        url: https://gateway.methis.at/phone/countrycode/get
+      operationId: getPhoneCountryCode
+      parameters:
+        - $ref: '#/parameters/License'
+        - $ref: '#/parameters/Guid'
+        - $ref: '#/parameters/CountryCode'
+      responses:
+        200:
+          $ref: '#/responses/PhoneCountryCodeGetResponse'
+        401:
+          $ref: '#/responses/ErrorUnauthorized'
+        402:
+          $ref: '#/responses/ErrorQuotaExceeded'
+        403:
+          $ref: '#/responses/ErrorForbidden'
+        404:
+          $ref: '#/responses/ErrorNotFound'
+        405:
+          $ref: '#/responses/ErrorNotAllowed'
+        412:
+          $ref: '#/responses/ErrorIncorrectParameters'
+        428:
+          $ref: '#/responses/ErrorMissingParameters'
+        500:
+          $ref: '#/responses/ErrorInternalServerError'
+        503:
+          $ref: '#/responses/ErrorServiceTemporaryUnavailable'
+      deprecated: false
+
+  "/phone/format":
+    post:
+      tags:
+      - Phone number
+      summary: Parse, format and validate phone numbers
+      description: |
+        Validates a given phone number and converts it to the canonical form. In addition the type of the phone number is determined (e.g. "fixed line", "mobile", ...). The number is not checked for existence.
+      externalDocs:
+        description: More information
+        url: https://gateway.methis.at/phone/format
+      operationId: formatPhoneNumber
+      parameters:
+        - $ref: '#/parameters/License'
+        - $ref: '#/parameters/Guid'
+        - name: phonenumber
+          in: formData
+          description: Phone number to be formatted and validated
+          required: true
+          type: string
+          minLength: 1
+          maxLength: 128
+        - $ref: '#/parameters/CountryCode'
+        - name: format
+          in: formData
+          description: |
+            The custom format of the returning phone number if valid. The format is a combination of the following placeholders:
+
+            * **{countrycode}**: The international dial prefix for the country without leading zero or the \"+\" sign
+
+            * **{nationalcode}**: The regional dial prefix
+
+            * **{phonenumber}**: The phone number including the extension and without the international and regional prefix
+
+            * **{national_prefix}**: The national dial prefix including the leading zero
+
+            * **{international_prefix}**: The international dial prefix including leading zeros.
+
+            If no custom format is specified the following combination is used: **+{countrycode} {nationalcode} {phonenumber}** (canonical format)
+          required: false
+          type: string
+          minLength: 0
+          maxLength: 100
+        - name: direct_dialing_delimiter
+          in: formData
+          description: Optional define a special character (e.g. -) as delimiter between the phone number and the extension.
+          required: false
+          type: string
+          minLength: 1
+          maxLength: 10
+        - name: allowed_delimiters
+          in: formData
+          description: Optional collection of characters inside the specified phone number which are allowed for delimiter. The collection must be provided as **JSON** formatted string.
+          required: false
+          type: string
+          minLength: 0
+          maxLength: 255
+      responses:
+        200:
+          $ref: '#/responses/PhoneFormatResponse'
+        401:
+          $ref: '#/responses/ErrorUnauthorized'
+        402:
+          $ref: '#/responses/ErrorQuotaExceeded'
+        403:
+          $ref: '#/responses/ErrorForbidden'
+        404:
+          $ref: '#/responses/ErrorNotFound'
+        405:
+          $ref: '#/responses/ErrorNotAllowed'
+        412:
+          $ref: '#/responses/ErrorIncorrectParameters'
+        428:
+          $ref: '#/responses/ErrorMissingParameters'
+        500:
+          $ref: '#/responses/ErrorInternalServerError'
+        503:
+          $ref: '#/responses/ErrorServiceTemporaryUnavailable'
+      deprecated: false
+
+  "/phone/mobile/check":
+    post:
+      tags:
+        - Phone number
+      summary: Verify mobile phone number
+      description: Real time validation of mobile numbers without triggering a call of send a text message.
+      externalDocs:
+        description: More information
+        url: https://gateway.methis.at/phone/mobile/check
+      operationId: checkMobilePhone
+      parameters:
+        - $ref: '#/parameters/License'
+        - $ref: '#/parameters/Guid'
+        - name: phonenumber
+          in: formData
+          description: Mobile phone number to be verified.
+          required: true
+          type: string
+          minLength: 1
+          maxLength: 128
+        - $ref: '#/parameters/CountryCode'
+      responses:
+        200:
+          $ref: '#/responses/PhoneMobileCheckResponse'
+        401:
+          $ref: '#/responses/ErrorUnauthorized'
+        402:
+          $ref: '#/responses/ErrorQuotaExceeded'
+        403:
+          $ref: '#/responses/ErrorForbidden'
+        404:
+          $ref: '#/responses/ErrorNotFound'
+        405:
+          $ref: '#/responses/ErrorNotAllowed'
+        412:
+          $ref: '#/responses/ErrorIncorrectParameters'
+        428:
+          $ref: '#/responses/ErrorMissingParameters'
+        500:
+          $ref: '#/responses/ErrorInternalServerError'
+        503:
+          $ref: '#/responses/ErrorServiceTemporaryUnavailable'
+      deprecated: false
+
+  "/url/check":
+    post:
+      tags:
+        - URL
+      summary: Information about web resources
+      description: |
+        Fetches the resource of a given url and checks if it is available. Only websites using HTTP/HTTPS are allowed. IP addresses and ports other than 80/443 are not permitted and will be ignored.
+      externalDocs:
+        description: More information
+        url: https://gateway.methis.at/url/check
+      operationId: checkUrl
+      parameters:
+        - $ref: '#/parameters/License'
+        - $ref: '#/parameters/Guid'
+        - name: url
+          in: formData
+          description: The url to be checked (e.g. any website)
+          required: true
+          type: string
+          minLength: 4
+          maxLength: 2048
+        - name: max_redirects
+          in: formData
+          description: The maximum amount of redirects until the lookup for the root resource will be stopped (default **10**)
+          required: false
+          type: string
+          minLength: 0
+          maxLength: 100
+          default: '10'
+      responses:
+        200:
+          $ref: '#/responses/UrlCheckResponse'
+        401:
+          $ref: '#/responses/ErrorUnauthorized'
+        402:
+          $ref: '#/responses/ErrorQuotaExceeded'
+        403:
+          $ref: '#/responses/ErrorForbidden'
+        404:
+          $ref: '#/responses/ErrorNotFound'
+        405:
+          $ref: '#/responses/ErrorNotAllowed'
+        412:
+          $ref: '#/responses/ErrorIncorrectParameters'
+        428:
+          $ref: '#/responses/ErrorMissingParameters'
+        500:
+          $ref: '#/responses/ErrorInternalServerError'
+        503:
+          $ref: '#/responses/ErrorServiceTemporaryUnavailable'
+      deprecated: false
+
+  "/vat/check":
+    post:
+      tags:
+        - VAT
+      summary: Check vat number for correctness
+      description: |
+        Checks if a given VAT (Value Added Tax) identification number is valid or not. Only VAT numbers of companies within the European Union can be verified.
+      externalDocs:
+        description: More information
+        url: https://gateway.methis.at/vat/check
+      operationId: checkVAT
+      parameters:
+        - $ref: '#/parameters/License'
+        - $ref: '#/parameters/Guid'
+        - name: vatnumber
+          in: formData
+          description: The VAT number of a company within the European Union
+          required: true
+          type: string
+          minLength: 1
+          maxLength: 255
+      responses:
+        200:
+          $ref: '#/responses/VatCheckResponse'
+        401:
+          $ref: '#/responses/ErrorUnauthorized'
+        402:
+          $ref: '#/responses/ErrorQuotaExceeded'
+        403:
+          $ref: '#/responses/ErrorForbidden'
+        404:
+          $ref: '#/responses/ErrorNotFound'
+        405:
+          $ref: '#/responses/ErrorNotAllowed'
+        412:
+          $ref: '#/responses/ErrorIncorrectParameters'
+        428:
+          $ref: '#/responses/ErrorMissingParameters'
+        500:
+          $ref: '#/responses/ErrorInternalServerError'
+        503:
+          $ref: '#/responses/ErrorServiceTemporaryUnavailable'
+      deprecated: false
+
+  "/vat/resolve":
+    post:
+      tags:
+        - VAT
+      summary: Try to resolve VAT number to company information
+      description: |
+        Resolves company information (company name and postal address) based on the company's VAT (Value Added Tax) identification number. Only VAT numbers of companies within the European Union can be verified and resolved. Some countries have access restrictions and may not deliver the full company information.
+      externalDocs:
+        description: More information
+        url: https://gateway.methis.at/vat/resolve
+      operationId: resolveVAT
+      parameters:
+        - $ref: '#/parameters/License'
+        - $ref: '#/parameters/Guid'
+        - name: vatnumber
+          in: formData
+          description: The VAT number of a company within the European Union
+          required: true
+          type: string
+          minLength: 1
+          maxLength: 255
+        - $ref: '#/parameters/Locale'
+      responses:
+        200:
+          $ref: '#/responses/VatResolveResponse'
+        401:
+          $ref: '#/responses/ErrorUnauthorized'
+        402:
+          $ref: '#/responses/ErrorQuotaExceeded'
+        403:
+          $ref: '#/responses/ErrorForbidden'
+        404:
+          $ref: '#/responses/ErrorNotFound'
+        405:
+          $ref: '#/responses/ErrorNotAllowed'
+        412:
+          $ref: '#/responses/ErrorIncorrectParameters'
+        428:
+          $ref: '#/responses/ErrorMissingParameters'
+        500:
+          $ref: '#/responses/ErrorInternalServerError'
+        503:
+          $ref: '#/responses/ErrorServiceTemporaryUnavailable'
+      deprecated: false
+
+  "/vat/search":
+    post:
+      tags:
+        - VAT
+      summary: Find VAT number and company information by name
+      description: |
+        Finds the VAT number and additional company information by the company's name and headquarters location. The function returns multiple results if similar companies are found in the same city.
+      externalDocs:
+        description: More information
+        url: https://gateway.methis.at/vat/search
+      operationId: searchVAT
+      parameters:
+        - $ref: '#/parameters/License'
+        - $ref: '#/parameters/Guid'
+        - name: company
+          in: formData
+          description: The name of an company. You may enter the fully qualified name or only partial information.
+          required: true
+          type: string
+          minLength: 1
+          maxLength: 255
+        - name: city
+          in: formData
+          description: The city where the company's headquarters is located.
+          required: false
+          type: string
+          minLength: 1
+          maxLength: 255
+        - name: country_code
+          in: formData
+          description: |
+            ISO 3166-1 alpha-2 country code to specify in which country to look for. Possible countries are: **AT, BE, CZ, DK, FI, GB, GR, HU, IT, LU, MT, SI**
+          required: false
+          type: string
+          minLength: 2
+          maxLength: 2
+          enum:
+            - AT
+            - GB
+            - IT
+            - LU
+            - BE
+            - DK
+            - FI
+            - CZ
+            - HU
+            - SI
+            - GR
+            - MT
+        - name: limit
+          in: formData
+          description: |
+            The maximum amount of results returned if multiple companies are found. Default value is **10**.
+          required: false
+          default: "10"
+          type: string
+          minLength: 1
+          maxLength: 20
+        - name: min_score
+          in: formData
+          description: |
+            Threshold to set the minimum score rate of results being returned. Default: **0.8**
+          required: false
+          default: "0.8"
+          type: string
+          minLength: 0
+          maxLength: 10
+      responses:
+        200:
+          $ref: '#/responses/VatSearchResponse'
+        401:
+          $ref: '#/responses/ErrorUnauthorized'
+        402:
+          $ref: '#/responses/ErrorQuotaExceeded'
+        403:
+          $ref: '#/responses/ErrorForbidden'
+        404:
+          $ref: '#/responses/ErrorNotFound'
+        405:
+          $ref: '#/responses/ErrorNotAllowed'
+        412:
+          $ref: '#/responses/ErrorIncorrectParameters'
+        428:
+          $ref: '#/responses/ErrorMissingParameters'
+        500:
+          $ref: '#/responses/ErrorInternalServerError'
+        503:
+          $ref: '#/responses/ErrorServiceTemporaryUnavailable'
+      deprecated: false
+
+#####################################################################
+# Parameters
+#####################################################################
+parameters:
+  # Default parameter license
+  License:
+    name: license
+    in: formData
+    description: |
+      The license key is part of the authentication key pair consisting of license and guid (global unique identifier). These two keys are used as your personal API keys. Note that every API request requires both keys, so you will need to include them in each request.
+    required: true
+    type: string
+    minLength: 29
+    maxLength: 29
+
+  # Default parameter guid
+  Guid:
+    name: guid
+    in: formData
+    description: |
+      The guid is part of the authentication key pair consisting of license and guid (global unique identifier). These two keys are used as your personal API keys. Note that every API request requires both keys, so you will need to include them in each request.
+    required: true
+    type: string
+    minLength: 30
+
+  # Default parameter country code ISO 3166-1 alpha 2
+  CountryCode:
+    name: countrycode
+    in: formData
+    description: ISO 3166-1 alpha-2 country code e.g. 'US'. Please see https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2 for further information.
+    required: true
+    type: string
+    minLength: 2
+    maxLength: 2
+
+  # Default parameter country code ISO 3166-1 alpha 2
+  Country_Code:
+    name: country_code
+    in: formData
+    description: ISO 3166-1 alpha-2 country code e.g. 'US'. Please see https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2 for further information.
+    required: true
+    type: string
+    minLength: 2
+    maxLength: 2
+
+  # Default parameter for locale according to RFC 4647 standard (language code)
+  Locale:
+    name: locale
+    in: formData
+    description: The preferred language of address elements in the result. The locale must be provided according to RFC 4647 standard (language code).
+    required: false
+    type: string
+    minLength: 0
+    maxLength: 5
+
+  # Default parameter for DUNS transformation functions
+  DunsNumber:
+    name: duns_number
+    in: formData
+    description: The D-U-N-S number you are looking for detailed information
+    required: true
+    type: string
+    minLength: 9
+    maxLength: 9
+
+  # Default parameter for DUNS transformation functions
+  DunsReasonCode:
+    name: reason_code
+    in: formData
+    description: |
+      Unique code describing the reason why you like to get detailed information about the specified company. Possible codes are:
+
+      * **1**: Credit decisions
+
+      * **2**: Credit check (intended business connection)
+
+      * **3**: Credit check (ongoing business connection)
+
+      * **4**: Debt collections
+
+      * **5**: Commercial credit insurance
+
+      * **6**: Insurance contract
+
+      * **7**: Leasing agreement
+
+      * **8**: Rental agreement
+    required: true
+    default: ""
+    type: string
+    maxLength: 1
+
+#####################################################################
+# Definitions
+#####################################################################
+definitions:
+
+  # /address/housenumber/extract Response
+  AddressHouseNumberExtractResponse:
+    title: "/address/housenumber/extract Response"
+    description: Response of successful transformation request for /address/housenumber/extract
+    required:
+    - street
+    - housenumber
+    - housenumber_only
+    - housenumber_addition
+    properties:
+      street:
+        type: string
+        example: "Vogelweiderstraße"
+        description: The extracted street name
+      housenumber:
+        type: string
+        example: "44a Top 5 Floor 7"
+        description: House number including additional house number information
+      housenumber_only:
+        type: string
+        example: "44a"
+        description: House number excluding additional house number information
+      housenumber_addition:
+        type: string
+        example: "Top 5 Floor 7"
+        description: Additional house number information
+    type: object
+
+  # /address/locate Response
+  # /address/search Response
+  AddressSearchResponse:
+    title: "/address/* Response"
+    description: Response of successful transformation request for /address/*
+    required:
+    - country_iso_2
+    - country_iso_3
+    - country
+    - state
+    - state_name
+    - state_code
+    - county
+    - district
+    - zip
+    - city
+    - street
+    - housenumber
+    - additional_data
+    - relevance
+    - latitude
+    - longitude
+    - navigation_latitude
+    - navigation_longitude
+    - matchlevel
+    properties:
+      country_iso_2:
+        type: string
+        example: "AT"
+        description: ISO 3166-1 alpha-2 country code
+      country_iso_3:
+        type: string
+        example: "AUT"
+        description: ISO 3166-1 alpha-3 country code
+      country:
+        type: string
+        example: "Österreich"
+        description: Country name together with the language information
+      state:
+        type: string
+        example: "Salzburg"
+        description:  State name/code together with the language information
+      state_name:
+        type: string
+        example: "Salzburg"
+        description: State name together with the language information
+      state_code:
+        type: string
+        example: "AT-5"
+        description: ISO 3166-2 state code (if available)
+      county:
+        type: string
+        example: "Salzburg"
+        description: County name together with the language information (if available)
+      district:
+        type: string
+        example: "Schallmoos"
+        description: District name together with the language information (if available)
+      zip:
+        type: string
+        example: "5020"
+        description: Postal code
+      city:
+        type: string
+        example: "Salzburg"
+        description: City name together with the language information
+      street:
+        type: string
+        example: "Vogelweiderstraße"
+        description: Street name together with the language information
+      housenumber:
+        type: string
+        example: "44a"
+        description: House number or building name together with the language information (if available)
+      additional_data:
+        type: string
+        example: "Top 5"
+        description: Additional house number information (e.g. floor, apartment, top)
+      relevance:
+        type: string
+        example: "100"
+        description: |
+          Indicates the relevance of the result found. The higher the score the more relevant the alternative.
+          The score is a normalized value between 0 and 100. Every typo or mismatch between the request and response
+          data (e.g. incorrect data, abbreviation, ..) will reduce the relevance.
+      latitude:
+        type: string
+        example: "47.81209"
+        description: Latitude to place a marker indicating the given location on a map (uses a dot as decimal point)
+      longitude:
+        type: string
+        example: "13.05608"
+        description: Longitude to place a marker indicating the given location on a map (uses a dot as decimal point)
+      navigation_latitude:
+        type: string
+        example: "47.81209"
+        description: Latitude of a potential route waypoint (uses a dot as decimal point)
+      navigation_longitude:
+        type: string
+        example: "13.05608"
+        description: Longitude of a potential route waypoint (uses a dot as decimal point)
+      matchlevel:
+        type: string
+        example: "housenumber"
+        enum:
+        - "housenumber"
+        - "street"
+        - "general"
+        - ""
+        description: |
+          The most detailed address field that matches the geo-coding query.
+          **housenumber**: the whole geo-location including the house number / building name was found.
+          **street**: the whole geo-location excluding the house number / building name was found. Please consider if you
+          do not provide a house number or building name in the request the most detailed address field possible will always be the street.
+          **general**: our service could only resolve a few address parts above the street level (e.g. only country or country + city, ...).
+    type: object
+
+  # /address/search/multiple Response
+  AddressSearchMultipleResponse:
+    title: "/address/search/multiple Response"
+    description: Response of successful transformation request for /address/search/multiple
+    required:
+    - addresses
+    properties:
+      addresses:
+        type: array
+        format: array
+        items:
+          $ref: '#/definitions/AddressSearchResponse'
+        description: Collection of geo-locations which matches the given address information. Each record has the same structure as the response of the Address Lookup.
+
+  # /bic/check Response
+  BicCheckResponse:
+    title: "/bic/check Response"
+    description: Response of successful transformation request for /bic/check
+    required:
+    - valid
+    - bic
+    properties:
+      valid:
+        type: string
+        example: "1"
+        enum:
+          - "0"
+          - "1"
+        description: |
+          Flag if the spelling of the BIC/SWIFT code is valid or not [**0**, **1**]
+      bic:
+        type: string
+        example: "BAWAATWWXXX"
+        description: The well formatted BIC/SWIFT code if valid.
+    type: object
+
+  # /business-data/duns/rating Response
+  BusinessDataDunsRatingResponse:
+    title: "/business-data/duns/rating Response"
+    description: Response of successful transformation request for /business-data/duns/rating
+    required:
+      - status
+      - status_description
+    properties:
+      status:
+        type: string
+        example: "1"
+        enum:
+          - "0"
+          - "1"
+        description: |
+          Flag if a company was found by its D-U-N-S number or not [**0**, **1**]
+      status_description:
+        type: string
+        example: "company found"
+        enum:
+          - "company found"
+          - "company not found"
+          - "invalid duns number"
+        description: |
+          Describes if a company was found or if the specified D-U-N-S number could not be resolved.
+          Possible values are: **company not found**, **company found**, **invalid duns number**
+      duns_number:
+        type: string
+        example: "301700001"
+        description: The DUNS number of the company. The same ase the input parameter if company was found.
+      company_name:
+        type: string
+        example: "Hugo Muster GmbH"
+        description: The company's official name
+      continent_name:
+        type: string
+        example: "Europe"
+        description: Continent name of the company's headquarters
+      country_code:
+        type: string
+        example: "AT"
+        description: ISO 3166-1 alpha-2 country code of the company's headquarters
+      country_code_3:
+        type: string
+        example: "AUT"
+        description: ISO 3166-1 alpha-3 country code of the company's headquarters
+      country_name:
+        type: string
+        example: "Austria"
+        description: Country name together with the language information
+      zip:
+        type: string
+        example: "8990"
+        description: Postal code of the company's headquarters
+      city:
+        type: string
+        example: "Bad Aussee"
+        description: City of the company's headquarters
+      street:
+        type: string
+        example: "Bahnhofstraße"
+        description: Street name of the company's headquarters
+      house_number:
+        type: string
+        example: "115"
+        description: House number of the company's headquarters
+      phone_number:
+        type: string
+        example: "+43 1 58861"
+        description: Phone number of the company's headquarters
+      fax_number:
+        type: string
+        example: "+43 1 58861232"
+        description: Fax number of the company's headquarters
+      state_name:
+        type: string
+        example: "Steiermark"
+        description: State name of the company's headquarters
+      ceo_name:
+        type: string
+        example: "Max Mustermann"
+        description: Name of the company's CEO (Chief Executive Officer)
+      ceo_title:
+        type: string
+        example: "Managing Director,Financial Director"
+        description: Position / Business title of the company's CEO
+      sic_code:
+        type: string
+        example: "3599"
+        description: The company's international SIC (Standard Industrial Classification) code
+      sic_description:
+        type: string
+        example: "industrial and commercial machinery and equipment, not elsewhere classified"
+        description: Description of the SIC code
+      sic_version:
+        type: string
+        example: "1987"
+        description: The version of SIC (either 1972, 1977 or 1987)
+      year_started:
+        type: string
+        example: "1900"
+        description: Year of establishment
+      net_worth:
+        type: integer
+        format: integer
+        example: null
+        description: The company's net worth (net value) in its local currency (may be NULL if unset)
+      currency_code:
+        type: string
+        example: "5080"
+        description: The local currency code of the company's headquarters country
+      currency_name:
+        type: string
+        example: "EUR"
+        description: The local currency name of the company's headquarters country
+      total_employees:
+        type: integer
+        format: int64
+        example: 500
+        description: The total number of employees (may be NULL if unset)
+      total_employees_indicator:
+        type: string
+        example: "A"
+        description: |
+          Indicator if subsidiaries are included or not
+          **A**: subsidiaries are not included
+          **B**: total value including subsidiaries
+        enum:
+          - "A"
+          - "B"
+      total_employees_indicator_description:
+        type: string
+        example: "Subsidiaries not included"
+        description: Description of the total number of employees indicator
+      legal_form_code:
+        type: integer
+        format: int64
+        example: 3
+        description: Code of the company's legal form
+      legal_form_description:
+        type: string
+        example: "Corporation"
+        description: Description of the legal form code
+      report_date:
+        type: string
+        format: date
+        example: "2016-12-12"
+        description: Timestamp when the company's information were updated the last time
+      is_out_of_business:
+        type: boolean
+        example: false
+        description: Flag if the company is already out of business
+      is_branch:
+        type: boolean
+        example: true
+        description: Flag if the company found is a branch or the main headquarter
+      business_registration_number:
+        type: string
+        example: "FN 999999 m"
+        description: Primary business identification number assigned to the business by government agency
+      business_registration_type:
+        type: string
+        example: "National Business Identification Number"
+        description: Type of identification number assigned to the business (e.g. Registration number, Judicial number, ...)
+      incorporation_year:
+        type: string
+        example: "1990"
+        description: Year business incorporated
+      trade_styles:
+        type: array
+        format: array
+        items:
+          type: string
+          example: "Austrian Fictious 1"
+          description: Other names of the company ('doing business as')
+        description: Array with other names of the company
+      enquiry_duns:
+        type: string
+        example: "301700001"
+        description: The D-U-N-S number of the enquiry. May vary from the specified D-U-N-S number if the headquarters data are returned
+      sales:
+        type: integer
+        format: int64
+        example: 15948223
+        description: Net sales for the period after returns, allowances and discounts are deducted (may be NULL if unset)
+      sales_estimated_description:
+        type: string
+        example: "Unknown"
+        description: Qualifies the annual sales volume (actual, estimated, forecast, projected or calculated)
+      paydex_score:
+        type: integer
+        format: int64
+        example: 95
+        description: D&B® PAYDEX® for the last 2 months experiences (not for all countries) (may be NULL if unset)
+      paydex_score_description:
+        type: string
+        example: "Anticipating"
+        description: Description about the D&B® PAYDEX® score (either Anticipate, Discount, Prompt, X days beyond terms or Unavailable) (may be NULL if unset)
+      paydex_norm:
+        type: integer
+        format: int64
+        example: 89
+        description: Industry D&B® PAYDEX® median or average (may be NULL if unset)
+      intangible_assets:
+        type: integer
+        format: int64
+        example: 45063
+        description: Total of intangible assets (may be NULL if unset)
+      max_credit_recommendation:
+        type: integer
+        format: int64
+        example: 2660000
+        description: Maximum amount of credit recommended by Dun & Bradstreet (Europe only) (may be NULL if unset)
+      dub_rating:
+        type: string
+        example: "2A1"
+        description: Rating assigned by Dun & Bradstreet (meaning varies by country)
+      dub_rating_financial_strength:
+        type: string
+        example: "2,500,00 - 11,999,999"
+        description: Part of the Dun & Bradstreet rating which indicates the financial strength of the business (from - to in USD)
+      dub_rating_risk:
+        type: string
+        example: "minimal risk"
+        description: |
+          Part of the Dun & Bradstreet rating which indicates the risk of a potential business cooperation:
+          **1**: minimal risk,
+          **2**: low risk,
+          **3**: greater than average risk,
+          **4**: significant level of risk,
+          **<other values>**: insufficient information to define a risk indicator
+      dub_rating_risk_description:
+        type: string
+        example: "proceed with transaction – offer terms required"
+        description: |
+          Part of the Dun & Bradstreet rating which indicates the risk of a potential business cooperation:
+          **1**: proceed with transaction - offer terms required,
+          **2**: proceed with transaction,
+          **3**: process with transaction, but monitor closely,
+          **4**: take suitable assurances before extending credit,
+          **<other values>**: no public information or D&B proprietary information
+      has_open_claims:
+        type: boolean
+        example: true
+        description: Flag if open claims, legal claims, liens, protested bills or equivalent exists
+      has_criminal_proceedings:
+        type: boolean
+        example: false
+        description: Flag if criminal proceedings exists
+      has_disaster_event:
+        type: boolean
+        example: false
+        description: Flag if special events concerning disasters such as fire, hurricanes etc. exists
+      has_financial_embarrassment:
+        type: boolean
+        example: false
+        description: Flag if open bankruptcy, receivership liquidation or equivalent exists
+      has_financial_legal_event:
+        type: boolean
+        example: false
+        description: Flag if special events available including financial embarrassment and legal fillings exists
+      has_special_event:
+        type: boolean
+        example: false
+        description: Flag if special events are available concerning changes to operational aspects including name changes, management changes, etc.
+      has_other_event:
+        type: boolean
+        example: false
+        description: Flag if special events exists that are not otherwise specified
+      has_secured_filings:
+        type: boolean
+        example: false
+        description: Flag if open secured filing such as UCC filings, secured charges or equivalent exists
+      has_lawsuit:
+        type: boolean
+        example: false
+        description: Flag if open suit(s), judgement(s), petitions or payment remarks exists
+      are_employees_estimated:
+        type: boolean
+        example: false
+        description: Flag if the total number of employees is estimated or actual
+      are_sales_estimated:
+        type: boolean
+        example: false
+        description: Flag if the annual sales volume is estimated or actual
+    type: object
+
+  # /business-data/duns/resolve Response
+  BusinessDataDunsResolveResponse:
+    title: "/business-data/duns/resolve Response"
+    description: Response of successful transformation request for /business-data/duns/resolve
+    required:
+      - status
+      - status_description
+    properties:
+      status:
+        type: string
+        example: "1"
+        enum:
+          - "0"
+          - "1"
+        description: Flag if a company was found by its D-U-N-S number or not [**0*, **1**]
+      status_description:
+        type: string
+        example: "company found"
+        enum:
+          - "company found"
+          - "company not found"
+          - "invalid duns number"
+        description: |
+          Describes if a company was found or if the specified D-U-N-S number could not be resolved.
+          Possible values are: **company not found**, **company found**, **invalid duns number**
+      company_name:
+        type: string
+        example: "Hugo Muster GmbH"
+        description: The company's official name
+      company_name_2:
+        type: string
+        example: "Freihandels GmbH Muster Hugo"
+        description: The company's second name or "doing business as"
+      continent_name:
+        type: string
+        example: "Europe"
+        description: Continent name of the company's headquarters
+      country_code:
+        type: string
+        example: "AT"
+        description: ISO 3166-1 alpha-2 country code of the company's headquarters
+      country_code_3:
+        type: string
+        example: "AUT"
+        description: ISO 3166-1 alpha-3 country code of the company's headquarters
+      zip:
+        type: string
+        example: "8990"
+        description: Postal code of the company's headquarters
+      city:
+        type: string
+        example: "Bad Aussee"
+        description: City of the company's headquarters
+      street:
+        type: string
+        example: "Bahnhofstraße"
+        description: Street name of the company's headquarters
+      house_number:
+        type: string
+        example: "115"
+        description: House number of the company's headquarters
+      phone_number:
+        type: string
+        example: "+43 1 58861"
+        description: Phone number of the company's headquarters
+      fax_number:
+        type: string
+        example: "+43 1 58861232"
+        description: Fax number of the company's headquarters
+      state_name:
+        type: string
+        example: "Steiermark"
+        description: State name of the company's headquarters
+      state_code:
+        type: string
+        example: "AT-6"
+        description: ISO 3166-2 state code of the company's headquarters
+      ceo_name:
+        type: string
+        example: "Max Mustermann"
+        description: Name of the company's CEO (Chief Executive Officer)
+      ceo_title:
+        type: string
+        example: "ManagingDirector"
+        description: Position / Business title of the company's CEO
+      ceo_secondary:
+        type: array
+        format: array
+        items:
+          type: string
+          example: "Hugo Emanuel Muster"
+          description: Name of other secondary CEOs
+        description: Collection of names of further CEOs
+      sic_code:
+        type: string
+        example: "3599"
+        description: The company's international SIC (Standard Industrial Classification) code
+      sic_description:
+        type: string
+        example: "industrial and commercial machinery and equipment, not elsewhere classified"
+        description: Description of the SIC code
+      year_started:
+        type: string
+        example: "1900"
+        description: Year of establishment
+      annual_turnover_local_currency:
+        type: integer
+        format: int64
+        example: 20000
+        description: The company's annual turnover in its local currency (may be NULL if unset)
+      annual_turnover_indicator_code:
+        type: string
+        example: "2"
+        description: |
+          Indicator if the annual turnover is an approximated or exact value:
+          **<empty value>**: not available,
+          **0**: exact value,
+          **1**: low end of range,
+          **2**: approximated,
+          **3**: modeled value
+        enum:
+          - ""
+          - "0"
+          - "1"
+          - "2"
+          - "3"
+      annual_turnover_indicator_description:
+        type: string
+        example: "Estimated"
+        description: Description of the annual turnover indicator
+      annual_turnover_usd:
+        type: integer
+        format: int64
+        example: 21281
+        description: The company's annual turnover in US Dollar (may be NULL if unset)
+      net_income:
+        type: integer
+        format: int64
+        example: null
+        description: The company's net income in its local currency (may be NULL if unset)
+      net_income_usd:
+        type: integer
+        format: int64
+        example: null
+        description: The company's net income in US Dollar (may be NULL if unset)
+      net_worth:
+        type: integer
+        format: int64
+        example: null
+        description: The company's net worth (net value) in its local currency (may be NULL if unset)
+      net_worth_usd:
+        type: integer
+        format: int64
+        example: null
+        description: The company's net worth (net value) in US Dollar (may be NULL if unset)
+      currency_code:
+        type: string
+        example: "5080"
+        description: The local currency code of the company's headquarters country (3-letter ISO 4217 currency code)
+      currency_name:
+        type: string
+        example: "EUR"
+        description: The local currency name of the company's headquarters country
+      marketability_code:
+        type: string
+        example: "1"
+        description: |
+          Indicator if the company / branch can be used for marketing purposes:
+          **1**: not marketable, but listed,
+          **2**: not marketable and not listed,
+          **3**: marketable and listed
+        enum:
+          - "1"
+          - "2"
+          - "3"
+      marketability_description:
+        type: string
+        example: "Not marketable and listed"
+        description: Description of the marketable indicator value
+      total_employees:
+        type: integer
+        format: int64
+        example: 500
+        description: The total number of employees (may be NULL if unset)
+      total_employees_indicator:
+        type: string
+        enum:
+          - "0"
+          - "1"
+          - "2"
+        example: "0"
+        description: |
+          Indicator if the total number of employees is an approximated or exact value:
+          **0**: exact value,
+          **1**: low end of range,
+          **2**: approximated
+      total_employees_indicator_description:
+        type: string
+        example: "Actual count"
+        description: Description of the total number of employees indicator
+      total_employees_physical_address:
+        type: integer
+        format: int64
+        example: null
+        description: The total number of employees working at the company's headquarters (may be NULL if unset)
+      total_employees_physical_address_indicator:
+        type: string
+        enum:
+          - "0"
+          - "1"
+          - "2"
+          - "3"
+          - ""
+        example: ""
+        description: |
+          Indicator if the total number of employees (working at the company's headquarters) is an approximated or exact value:
+          **<empty value>**: not available,
+          **0**: exact value,
+          **1**: low end of range,
+          **2**: approximated or not available if the number of employees at this location is zero,
+          **3**: modeled value
+      import_export_indicator:
+        type: string
+        enum:
+          - ""
+          - "A"
+          - "B"
+          - "C"
+          - "D"
+          - "E"
+          - "F"
+          - "G"
+          - "H"
+        example: "B"
+        description: |
+          Indicator if the company has an import and/or export trade:
+          **<empty value>**: not available,
+          **A**: import / export / agent,
+          **B**: imports and exports,
+          **C**: imports,
+          **D**: imports and agents,
+          **E**: exports and agents,
+          **F**: agents, keeps no inventory, does not take title goods,
+          **G**: not available or none,
+          **H**: exports
+      import_export_indicator_description:
+        type: string
+        example: "Imports and exports"
+        description: Description of the import/export indicator
+      legal_form_code:
+        type: integer
+        format: int64
+        example: 3
+        description: Code of the company's legal form (may be NULL if unset)
+      legal_form_description:
+        type: string
+        example: "Corporation"
+        description: Description of the legal form code
+      business_structure_code:
+        type: string
+        enum:
+          - ""
+          - "0"
+          - "1"
+          - "2"
+          - "4"
+        example: "1"
+        description: |
+          Code of the company's business structure:
+          **<empty value>**: not available,
+          **0**: single location,
+          **1**: headquarter,
+          **2**: branch,
+          **4**: division,
+      business_structure_description:
+        type: string
+        example: "Headquarter"
+        description: Description of the business structure code
+      business_registration_number_code:
+        type: string
+        example: "70"
+        description: Unique code describing the national registration id
+      business_registration_number_code_description:
+        type: string
+        example: "Unknown"
+        description: Friendly name of the business registration number code
+      undeliverable_indicator:
+        type: string
+        enum:
+          - "B"
+          - "M"
+          - "N"
+          - "P"
+          - "Y"
+        example: "P"
+        description: |
+          Indicator if any of the company's information are undeliverable:
+          **B**: both addresses are undeliverable,
+          **M**: mail address is undeliverable,
+          **N**: no nixie indication,
+          **P**: physical address undeliverable,
+          **Y**: one of the addresses is undeliverable
+      undeliverable_description:
+        type: string
+        example: "Physical address undeliverable"
+        description: Description of the undeliverable indicator
+      financial_statement_date:
+        type: string
+        format: date
+        example: "2016-12-12"
+        description: Timestamp when the financial information were updated the last time (may be full year only or full date with day, month and year)
+      report_date:
+        type: string
+        format: date
+        example: "2016-12-12"
+        description: Timestamp when the company's information were updated the last time (may be full year only or full date with day, month and year)
+      is_only_available_address:
+        type: boolean
+        example: false
+        description: Flag if this postal address is the only address available for the company
+      is_subsidiary:
+        type: boolean
+        example: true
+        description: Flag if this postal address is a subsidiary of the company
+      total_employees_including_principals_indicator:
+        type: boolean
+        example: false
+        description: Flag if the total number of employees includes principals
+      is_out_of_business:
+        type: boolean
+        example: false
+        description: Flag if the company is already out of business
+    type: object
+
+  # /business-data/duns/search Response
+  BusinessDataDunsSearchResponse:
+    title: "/business-data/duns/search Response"
+    description: Response of successful transformation request for /business-data/duns/search
+    required:
+      - status
+      - results
+    properties:
+      status:
+        type: string
+        example: "single result"
+        enum:
+          - "no result"
+          - "single result"
+          - "multiple results"
+        description: |
+          Short description about the number of results found:
+          **no result**: Could not find any company which matches the specified criteria,
+          **single result**: We found 1 company which matches the specified criteria,
+          **multiple results**: We found at least 2 companies which matches the specified criteria
+      results:
+        type: array
+        format: array
+        items:
+          $ref: '#/definitions/BusinessDataDunsSearchResult'
+        description: Collection of all found companies
+    type: object
+
+  # Result record for results of /business-data/duns/search
+  BusinessDataDunsSearchResult:
+    title: "/business-data/duns/search Results Item"
+    description: Single item for results array within response of successful transformation request for /business-data/duns/search
+    properties:
+      company_name:
+        type: string
+        example: "METHIS Software GmbH"
+        description: The official company name
+      city:
+        type: string
+        example: "Salzburg"
+        description: The city of the company's address
+      zip:
+        type: string
+        example: "5020"
+        description: The zip of the company's address
+      street:
+        type: string
+        example: "Vogelweiderstraße"
+        description: The street of the company's address
+      house_number:
+        type: string
+        example: "44a"
+        description: The house number of the company's address
+      duns_number:
+        type: string
+        example: "300810020"
+        description: The company's D-U-N-S number
+      duns_number_hq:
+        type: string
+        example: null
+        description: Optional the D-U-N-S number of the company's headquarters if this isn't the headquarter
+      phone_number:
+        type: string
+        example: "+43 662 2202220"
+        description: The company's phone number
+      branch_code:
+        type: string
+        example: "S"
+        enum:
+          - "B"
+          - "N"
+          - "H"
+          - "S"
+        description: |
+          One-letter code describing the company's branch:
+          **B**: branch,
+          **N**: not a branch,
+          **H**: headquarter,
+          **S**: single location
+      branch_description:
+        type: string
+        example: "single location"
+        enum:
+          - "branch"
+          - "not a branch"
+          - "headquarter"
+          - "single location"
+        description: Description of the company's branch
+      score:
+        type: number
+        format: float
+        example: 0.4
+        description: Internal ranking for all results compared with each other. the value is normalized between **0** and **1** (**1** is the best matching result and **0** the least one)
+    type: object
+
+  # /business-data/undeliverable-contacts/search Response
+  BusinessDataUndeliverableContactsResponse:
+    title: "/business-data/undeliverable-contacts/search Response"
+    description: Response of successful transformation request for /business-data/undeliverable-contacts/search
+    required:
+    - undeliverable
+    - deceased
+    - moved
+    - new_address_available
+    - contact
+    properties:
+      undeliverable:
+        type: string
+        example: "1"
+        enum:
+        - "0"
+        - "1"
+        description: Flag if sending a mail would result in an undeliverable state [**0**, **1**]
+      deceased:
+        type: string
+        example: "0"
+        enum:
+          - "0"
+          - "1"
+        description: Flag if the person is deceased [**0**, **1**]
+      moved:
+        type: string
+        example: "1"
+        enum:
+          - "0"
+          - "1"
+        description: Flag if the person has moved to a new address but we do not know the new address [**0**, **1**]
+      new_address_available:
+        type: string
+        example: "1"
+        enum:
+          - "0"
+          - "1"
+        description: Flag if the person has moved to a new address and we know the new address [**0**, **1**]
+      contact:
+        $ref: '#/definitions/BusinessDataUndeliverableContactsSearchContact'
+    type: object
+
+  # Contact object for /business-data/undeliverable-contacts/search
+  BusinessDataUndeliverableContactsSearchContact:
+    title: "Contact object for /business-data/undeliverable-contacts/search Response"
+    description: |
+      Contact object within response of successful transformation request for /business-data/undeliverable-contacts/search
+      Collection of multiple information about the person found (e.g. the new postal address if known)
+      gender: The person's gender (M or F)
+      title: The person's title
+      title_of_nobility: The person's title of nobility
+      country_code: The ISO 3166-1 alpha-2 code of the country the person lives in
+      zip: The postal code of the city/region the person lives in
+      city: The city the person lives in
+      street: The street the person lives in
+      street_addition: Additional information about the street
+      house_number: The house number of the building the person lives in
+      house_number_addition: Additional information about the house number
+      date_of_birth: The person's date of birth (yyyy-mm-dd) if available and deceased
+      timestamp: The timestamp (yyyy-mm-dd) when the database entry was created
+    properties:
+      gender:
+        type: string
+        enum:
+          - "M"
+          - "F"
+        example: "M"
+        description: The person's gender (**M** or **F**)
+      title:
+        type: string
+        example: "Dr."
+        description: The person's title
+      title_of_nobility:
+        type: string
+        example: "Graf"
+        description: The person's title of nobility
+      street:
+        type: string
+        example: "Vogelweiderstraße"
+        description: The street the person lives in
+      street_addition:
+        type: string
+        example: Additional information about the street
+        description: Additional street information
+      house_number:
+        type: string
+        example: "44a"
+        description: The house number of the building the person lives in
+      house_number_addition:
+        type: string
+        example: "Top 5"
+        description: Additional information about the house number
+      zip:
+        type: string
+        example: "5020"
+        description: The postal code of the city/region the person lives in
+      city:
+        type: string
+        example: "Salzburg"
+        description: The city the person lives in
+      country_code:
+        type: string
+        example: "AT"
+        description: The ISO 3166-1 alpha-2 code of the country the person lives in
+      date_of_birth:
+        type: string
+        format: date
+        example: "1950-01-01"
+        description: The person's date of birth (yyyy-mm-dd) if available and deceased
+      timestamp:
+        type: string
+        format: date
+        example: "2017-04-20"
+        description: The timestamp (yyyy-mm-dd) when the database entry was created
+    type: object
+
+  # /convert/capitalfirst Response
+  ConvertCapitalFirstResponse:
+    title: "/convert/capitalfirst Response"
+    description: Response of successful transformation request for /convert/capitalfirst
+    required:
+    - text
+    properties:
+      text:
+        type: string
+        example: "Something In Capitalized Writing"
+        description: Text written in 'Capital First'
+    type: object
+
+  # /convert/lowercase Response
+  ConvertLowerCaseResponse:
+    title: "/convert/lowercase Response"
+    description: Response of successful transformation request for /convert/lowercase
+    required:
+    - text
+    properties:
+      text:
+        type: string
+        example: "something in lower case"
+        description: Text written in all lower case
+    type: object
+
+  # /convert/uppercase Response
+  ConvertUpperCaseResponse:
+    title: "/convert/uppercase Response"
+    description: Response of successful transformation request for /convert/uppercase
+    required:
+    - text
+    properties:
+      text:
+        type: string
+        example: "SOMETHING IN UPPER CASE"
+        description: The text in upper case
+    type: object
+
+  # /convert/wrap Response
+  ConvertWrapResponse:
+    title: "/convert/wrap Response"
+    description: Response of successful transformation request for /convert/wrap
+    required:
+    - text
+    properties:
+      text:
+        type: string
+        example: "Something<br>different"
+        description: The wrapped text
+    type: object
+
+  # /email/domain/check Response
+  EmailDomainCheckResponse:
+    title: "/email/domain/check Response"
+    description: Response of successful transformation request for /email/domain/check
+    required:
+      - valid
+      - description
+      - status_code
+    properties:
+      valid:
+        type: string
+        description: Flag if the email address is valid or not. '0' for invalid and '1' for valid email address.
+        example: "1"
+        enum:
+          - "0"
+          - "1"
+      description:
+        type: string
+        description: Error description if syntax or mail server are invalid. Empty value means no error.
+        example: "domain"
+        enum:
+          - "syntax"
+          - "domain"
+          - "disposable"
+          - ""
+      status_code:
+        type: string
+        description: Unique status code for each possible validation state. '10' for invalid syntax, '20' for missing MX record, '21' for disposable email and '1' for valid email address.
+        example: "1"
+        enum:
+          - "1"
+          - "10"
+          - "20"
+          - "21"
+    type: object
+
+  # /email/extended/check Response
+  EmailExtendedCheckResponse:
+    title: "/email/extended/check Response"
+    description: Response of successful transformation request for /email/extended/check
+    required:
+      - valid
+      - description
+      - status_code
+    properties:
+      valid:
+        type: string
+        description: Flag if the email address is valid or not. '0' for invalid and '1' for valid email address. 'unknown' if mail server could not be verified.
+        example: "1"
+        enum:
+          - "0"
+          - "1"
+          - "unknown"
+      description:
+        type: string
+        description: |
+          Error description if syntax or mail server are invalid. Empty value means no error.
+
+          * **syntax**: Typo error in email address
+
+          * **domain**: No MX record found for domain part
+
+          * **disposable**: Known provider for disposable email addresses
+
+          * **mail server currently unavailable**: Connection to mail server could not be established
+
+          * **mailbox**: The mail server rejects emails for the given mailbox
+
+          * **greylisted**: The request was blocked by the mail server
+
+          * **catch all**: The mail server accepts mails for all email addresses
+        example: ""
+        enum:
+          - "syntax"
+          - "domain"
+          - "disposable"
+          - "mail server currently unavailable"
+          - "mailbox"
+          - "greylisted"
+          - "catch all"
+          - ""
+      status_code:
+        type: string
+        description: |
+          Unique status code for each possible validation state.
+
+          * **1**: The email address has a valid syntax, a MX record exists, it's not disposable and the mailbox exists.
+
+          * **10**: Typo error in email address
+
+          * **20**: No MX record found for domain part
+
+          * **21**: Known provider for disposable email addresses
+
+          * **30**: The mail server rejects emails for the given mailbox
+
+          * **31**: Connection to mail server could not be established
+
+          * **32**: The request was blocked by the mail server (greylisted)
+
+          * **33**: The mail server accepts mails for all email addresses
+        example: "1"
+        enum:
+          - "1"
+          - "10"
+          - "20"
+          - "21"
+          - "30"
+          - "31"
+          - "32"
+          - "33"
+    type: object
+
+  # /email/syntax/check Response
+  EmailSyntaxCheckResponse:
+    title: "/email/syntax/check Response"
+    description: Response of successful transformation request for /email/syntax/check
+    required:
+      - valid
+      - status_code
+    properties:
+      valid:
+        type: string
+        description: Flag if the spelling is valid or not. '0' for invalid and '1' for valid syntax.
+        example: "1"
+        enum:
+          - "0"
+          - "1"
+      status_code:
+        type: string
+        description: Unique status code for each possible validation state. '10' for invalid and '1' for valid syntax.
+        example: "1"
+        enum:
+          - "1"
+          - "10"
+    type: object
+
+  # /firstname/get Response
+  FirstNameGetResponse:
+    title: "/firstname/get Response"
+    description: Response of successful transformation request for /firstname/get
+    required:
+    - firstname
+    - name
+    properties:
+      firstname:
+        type: string
+        description: All first names found in the given full name (separated using a whitespace)
+        example: "John"
+      name:
+        type: string
+        description: The remaining parts of the given full name
+        example: "Doe"
+    type: object
+
+  # /gender/extended/get Response
+  GenderExtendedGetResponse:
+    title: "/gender/extended/get Response"
+    description: Response of successful transformation request for /gender/extended/get
+    required:
+    - gender
+    properties:
+      gender:
+        type: string
+        example: "M"
+        description: |
+          The gender of the first name where the following codes apply
+          'M' for male
+          'F' for female
+          '?' for unknown gender
+        enum:
+          - 'M'
+          - 'F'
+          - '?'
+    type: object
+
+  # /gender/get Response
+  GenderGetResponse:
+    title: "/gender/get Response"
+    description: Response of successful transformation request for /gender/get
+    required:
+    - gender
+    properties:
+      gender:
+        type: string
+        example: "M"
+        description: |
+          The gender of the first name where the following codes apply
+          'M' for male
+          'F' for female
+          '?' for unknown gender
+        enum:
+          - 'M'
+          - 'F'
+          - '?'
+    type: object
+
+  # /iban/check Response
+  IbanCheckResponse:
+    title: "/iban/check Response"
+    description: Response of successful transformation request for /iban/check
+    required:
+    - valid
+    - iban
+    properties:
+      valid:
+        description: Either '1' if IBAN is valid otherwise '0'
+        type: string
+        example: "1"
+        enum:
+          - "0"
+          - "1"
+      iban:
+        description: The formatted IBAN
+        type: string
+        example: "AT771400000123456789"
+    type: object
+
+  # /phone/countrycode/get Response
+  PhoneCountryCodeGetResponse:
+    title: "/phone/countrycode/get Response"
+    description: Response of successful transformation request for /phone/countrycode/get
+    required:
+    - countrycode
+    - international_prefix
+    - national_prefix
+    properties:
+      countrycode:
+        type: string
+        example: "43"
+        description: ISO 3166-1 alpha-2 country code
+      international_prefix:
+        type: string
+        example: "00"
+        description: The international dial prefix of the specified country
+      national_prefix:
+        type: string
+        example: "0"
+        description: The national dial prefix of the specified country
+    type: object
+
+  # /phone/format Response
+  PhoneFormatResponse:
+    title: "/phone/format Response"
+    description: Response of successful transformation request for /phone/format
+    required:
+    - valid
+    - number
+    - type
+    properties:
+      valid:
+        type: string
+        example: "1"
+        description: Flag if the spelling of the phone number is valid or not [**0**, **1**]
+      number:
+        type: string
+        example: "+43 662 22023788"
+        description: The phone number formatted to the canonical or custom form if valid
+      type:
+        type: string
+        example: "FIXED_LINE"
+        enum:
+          - MOBILE
+          - FIXED_LINE
+          - FIXED_LINE_OR_MOBILE
+          - TOLL_FREE
+          - PREMIUM_RATE
+          - SHARED_COST
+          - VOIP
+          - PERSONAL_NUMBER
+          - PAGER
+          - UAN
+          - VOICEMAIL
+          - UNKNOWN
+        description: |
+          The determined phone number type:
+          **PREMIUM_RATE**: premium rate,
+          **TOLL_FREE**: toll free,
+          **MOBILE**: mobile phone number,
+          **FIXED_LINE**: fixed line,
+          **FIXED_LINE_OR_MOBILE**: fixed line or mobile phone number,
+          **SHARED_COST**: shard cost,
+          **VOIP**: voice over ip,
+          **PERSONAL_NUMBER**: personal number,
+          **PAGER**: pager,
+          **UAN**: universal access number,
+          **VOICEMAIL**: voicemail,
+          **UNKNOWN**: unknown connection type
+    type: object
+
+  # /phone/format Response
+  PhoneMobileCheckResponse:
+    title: "/phone/mobile/check Response"
+    description: Response of successful transformation request for /phone/mobile/check
+    required:
+    - phonenumber
+    - status
+    properties:
+      phonenumber:
+        type: string
+        example: "+43 664 12345678"
+        description: Phone number formatted to the canonical form if valid
+      status:
+        type: string
+        example: "valid"
+        enum:
+          - "valid"
+          - "invalid"
+          - "unknown"
+          - "no mobile number"
+        description: |
+          Flag if the mobile phone number is either valid and active, valid but disabled (out of network coverage), has an invalid syntax /is unreachable, or not a mobile phone number type:
+          **valid**: the mobile phone number is valid,
+          **inactive**: the mobile phone number is valid but out of network coverage or is turned off,
+          **invalid**: the mobile phone number is invalid or unreachable,
+          **no mobile number**: the phone number is not a mobile phone number,
+          **unknown**: the phone number could not be verified
+    type: object
+
+  # /url/check Response
+  UrlCheckResponse:
+    title: "/url/check Response"
+    description: Response of successful transformation request for /url/check
+    required:
+    - valid
+    - url
+    - http_code
+    - total_time
+    - namelookup_time
+    - connect_time
+    - pretransfer_time
+    - starttransfer_time
+    - primary_ip
+    - primary_port
+    - download_content_length
+    - content_type
+    - redirects
+    - parameters
+    properties:
+      valid:
+        type: integer
+        format: int64
+        example: "1"
+        enum:
+          - "0"
+          - "1"
+        description: Flag if the root resource (website) is valid or not [0, 1]
+      url:
+        type: string
+        example: "https://methis.at"
+        description: The final url of the resource
+      http_code:
+        type: integer
+        format: int64
+        example: 200
+        description: The HTTP status code according to https://en.wikipedia.org/wiki/List_of_HTTP_status_codes
+      total_time:
+        type: number
+        format: float
+        example: 1.123456
+        description: Total time of the request in seconds
+      namelookup_time:
+        type: number
+        format: float
+        example: 0.123456
+        description: Time until host name resolved in seconds
+      connect_time:
+        type: number
+        format: float
+        example: 0.020000
+        description: Time until connection established in seconds
+      pretransfer_time:
+        type: number
+        format: float
+        example: 0.020000
+        description: Time until file transfer began in seconds
+      starttransfer_time:
+        type: number
+        format: float
+        example: 0.060000
+        description: Time to first byte in seconds
+      primary_ip:
+        type: string
+        example: "10.0.0.1"
+        description: IP address of the most recent connection
+      primary_port:
+        type: integer
+        format: int64
+        example: 443
+        description: Destination port of the connection
+      download_content_length:
+        type: integer
+        format: int64
+        example: -1
+        description: Number of bytes to download from the resource (-1 means no information available)
+      content_type:
+        type: string
+        example: "text/html; charset=UTF-8"
+        description: Content type of the requested resource
+      redirects:
+        type: array
+        format: array
+        items:
+          type: object
+        description: Array collection of all urls including redirects
+      parameters:
+        type: array
+        format: array
+        items:
+          type: object
+        description: Array collection of all url parameters
+    type: object
+
+  # /vat/check Response
+  VatCheckResponse:
+    title: "/vat/check Response"
+    description: Response of successful transformation request for /vat/check
+    required:
+    - valid
+    - countrycode
+    - vatnumber
+    properties:
+      valid:
+        type: string
+        example: "1"
+        description: Flag if the VAT number is valid or not [**0**, **1**]
+      countrycode:
+        type: string
+        example: "AT"
+        description: ISO 3166-1 alpha-2 country code
+      vatnumber:
+        type: string
+        example: "U57545838"
+        description: Vat number part without country code
+    type: object
+
+  # /vat/resolve Response
+  VatResolveResponse:
+    title: "/vat/resolve Response"
+    description: Response of successful transformation request for /vat/resolve
+    required:
+    - valid
+    - countrycode
+    - vatnumber
+    - name
+    - countryname
+    - state
+    - county
+    - city
+    - zip
+    - street
+    - housenumber
+    - additional_data
+    - raw_address
+    - countrycode_iso_3
+    - relevance
+    - latitude
+    - longitude
+    - matchlevel
+    properties:
+      valid:
+        type: string
+        example: "1"
+        description: Flag if the VAT number is valid or not [0, 1]
+      countrycode:
+        type: string
+        example: "AT"
+        description: ISO 3166-1 alpha-2 country code
+      vatnumber:
+        type: string
+        example: "U57545838"
+        description: The verified VAT number without the country code as prefix
+      name:
+        type: string
+        example: "METHIS Software GmbH"
+        description: The official company name if VAT number is valid
+      countryname:
+        type: string
+        example: "Österreich"
+        description: Country name together with the language information
+      state:
+        type: string
+        example: "Salzburg"
+        description: State name/code together with the language information
+      county:
+        type: string
+        example: "Salzburg"
+        description: County name together with the language information (if available)
+      city:
+        type: string
+        example: "Salzburg"
+        description: City name together with the language information
+      zip:
+        type: string
+        example: "5020"
+        description: Postal code
+      street:
+        type: string
+        example: "Vogelweiderstraße"
+        description: Street name together with the language information
+      housenumber:
+        type: string
+        example: "44a"
+        description: House number together with the language information (if available)
+      additional_data:
+        type: string
+        example: "Top 5"
+        description: Additional house number information (e.g. floor, apartment, top)
+      raw_address:
+        type: string
+        example: "Vogelweiderstraße 44a AT-5020 Salzburg"
+        description: The raw address of the company received before its split into its address parts
+      countrycode_iso_3:
+        type: string
+        example: "AUT"
+        description: ISO 3166-1 alpha-3 country code
+      relevance:
+        type: string
+        example: "100"
+        description: |
+          Indicates the relevance of the result found. The higher the score the more relevant the alternative.
+          The score is a normalized value between 0 and 100. Every typo or mismatch between the request and response
+          data (e.g. incorrect data, abbreviation, ..) will reduce the relevance.
+      latitude:
+        type: string
+        example: "47.81209"
+        description: Latitude to place a marker indicating the given location on a map (uses a dot as decimal point)
+      longitude:
+        type: string
+        example: "13.05608"
+        description: Longitude to place a marker indicating the given location on a map (uses a dot as decimal point)
+      matchlevel:
+        type: string
+        example: "housenumber"
+        description: |
+          The most detailed address field that matches the geo-coding query:
+          **housenumber**: the whole geo-location including the house number / building name was found.
+          **street**: the whole geo-location excluding the house number / building name was found. Please consider if you do not provide a house number or building name in the request the most detailed address field possible will always be the street.
+          **general**: our service could only resolve a few address parts above the street level (e.g. only country or country + city, ...).
+    type: object
+
+  # /vat/search Response single result record set
+  VatSearchResultRecord:
+    title: "/vat/search Response Record"
+    description: Single record of successful VatSearchResponse
+    required:
+      - vatnumber
+      - company
+      - address
+    properties:
+      vatnumber:
+        type: string
+        example: "ATU57545838"
+        description: The VAT numbers including the country code as prefix separated by a newline [only if uglify is set to 1]
+      company:
+        type: string
+        example: "Methis Software GmbH"
+        description: Name of the company
+      address:
+        type: string
+        example: "Vogelweiderstraße 44a AT-5020 Salzburg"
+        description: Address of the company
+    type: object
+
+  # /vat/search Response
+  VatSearchResponse:
+    title: "/vat/search Response"
+    description: Response of successful transformation request for /vat/search
+    required:
+      - result
+    properties:
+      result:
+        type: array
+        format: array
+        items:
+          $ref: '#/definitions/VatSearchResultRecord'
+        description: Collection of all other response keys, once for each company found
+    type: object
+
+  ################################
+  # Default errors
+  ################################
+  ErrorUnauthorized:
+    title: "Error - Unauthorized"
+    description: Default response if [License] or [Guid] not present or invalid
+    required:
+      - errorcode
+      - errormessage
+    properties:
+      errorcode:
+        type: integer
+        format: int64
+        example: 401
+        description: Unique error code for this error
+      errormessage:
+        type: string
+        example: "guid or license missing"
+        description: Description for this error
+    type: object
+
+  ErrorQuotaExceeded:
+    title: "Error - Quota exceeded, payment required"
+    description: Default response if your /data.mill credit quota is exceeded.
+    required:
+      - credits
+    properties:
+      credits:
+        type: array
+        format: array
+        items:
+          type: string
+        example: [
+          "Credit quota exceeded."
+        ]
+        description: Description that your don't have enought available data.mill credits
+    type: object
+
+  ErrorForbidden:
+    title: "Error - Forbidden"
+    description: Additional agreement, which is required for this action, not accepted
+    required:
+      - errorcode
+      - errormessage
+    properties:
+      errorcode:
+        type: integer
+        format: int64
+        example: 403
+        description: Unique error code for this error
+      errormessage:
+        type: string
+        example: "additional agreement not accepted"
+        description: Description for this error
+    type: object
+
+  ErrorNotFound:
+    title: "Error - Not found"
+    description: Action, transformation or route not found
+    required:
+      - errorcode
+      - errormessage
+    properties:
+      errorcode:
+        type: integer
+        format: int64
+        example: 404
+        description: Unique error code for this error
+      errormessage:
+        type: string
+        example: "transformation function name invalid"
+        description: Description for this error
+    type: object
+
+  ErrorNotAllowed:
+    title: "Error - Method not allowed"
+    description: Invalid HTTP verb/action used
+    required:
+      - errorcode
+      - errormessage
+    properties:
+      errorcode:
+        type: integer
+        format: int64
+        example: 405
+        description: Unique error code for this error
+      errormessage:
+        type: string
+        example: "wrong HTTP verb, please use POST requests"
+        description: Description for this error
+    type: object
+
+  ErrorMissingParameters:
+    title: "Error - Missing parameter(s)"
+    description: One or more parameters are missing
+    required:
+      - errorcode
+      - errormessage
+      - error_description
+    properties:
+      errorcode:
+        type: integer
+        format: int64
+        example: 428
+        description: Unique error code for this error
+      errormessage:
+        type: string
+        example: "missing parameters"
+        description: Description for this error
+      error_description:
+        type: object
+        format: object
+        example: {
+          "[field_name]": [
+            "The [field_name] field is required."
+          ]
+        }
+        description: Collection for validation errors of the request parameters
+    type: object
+
+  ErrorIncorrectParameters:
+    title: "Error - Incorrect parameter(s)"
+    description: One or more parameters are incorrect
+    required:
+      - errorcode
+      - errormessage
+      - error_description
+    properties:
+      errorcode:
+        type: integer
+        format: int64
+        example: 412
+        description: Unique error code for this error
+      errormessage:
+        type: string
+        example: "incorrect parameters"
+        description: Description for this error
+      error_description:
+        type: object
+        format: object
+        example: {
+          "[field_name]": [
+            "The [field_name] may not be greater than 255 characters."
+          ]
+        }
+        description: Collection of validation errors for request parameters
+    type: object
+
+  ErrorInternalError:
+    title: "Error - Internal server error"
+    description: An internal server error occurred. Please try again later.
+    example:
+    type: object
+
+  ErrorServiceUnavailable:
+    title: "Error - Service temporarily unavailable"
+    description: A temporary occurred. Please try again later.
+    required: [errorcode, errormessage]
+    properties:
+      errorcode:
+        type: integer
+        format: int64
+        example: 503
+        description: Unique error code for this error
+      errormessage:
+        type: string
+        example: "internal error"
+        description: Description for this error
+    type: object
+
+#####################################################################
+# Responses
+#####################################################################
+responses:
+
+  AddressHouseNumberExtractResponse:
+    description: Response for successful transformation of /address/housenumber/extract
+    schema:
+      $ref: '#/definitions/AddressHouseNumberExtractResponse'
+  AddressLocateResponse:
+    description: Response for successful transformation of /address/locate
+    schema:
+      $ref: '#/definitions/AddressSearchResponse'
+  AddressSearchResponse:
+    description: Response for successful transformation of /address/search
+    schema:
+      $ref: '#/definitions/AddressSearchResponse'
+  AddressSearchMultipleResponse:
+    description: Response for successful transformation of /address/search/multiple
+    schema:
+      $ref: '#/definitions/AddressSearchMultipleResponse'
+  BicCheckResponse:
+    description: Response for successful transformation of /bic/check
+    schema:
+      $ref: '#/definitions/BicCheckResponse'
+  BusinessDataDunsRatingResponse:
+    description: Response for successful transformation of /business-data/duns/rating
+    schema:
+      $ref: '#/definitions/BusinessDataDunsRatingResponse'
+  BusinessDataDunsResolveResponse:
+    description: Response for successful transformation of /business-data/duns/resolve
+    schema:
+      $ref: '#/definitions/BusinessDataDunsResolveResponse'
+  BusinessDataDunsSearchResponse:
+    description: Response for successful transformation of /business-data/duns/search
+    schema:
+      $ref: '#/definitions/BusinessDataDunsSearchResponse'
+  BusinessDataUndeliverableContactsSearchResponse:
+    description: Response for successful transformation of /business-data/undeliverable-contacts/search
+    schema:
+      $ref: '#/definitions/BusinessDataUndeliverableContactsResponse'
+  ConvertCapitalFirstResponse:
+    description: Response for successful transformation of /convert/capitalfirst
+    schema:
+      $ref: '#/definitions/ConvertCapitalFirstResponse'
+  ConvertLowerCaseResponse:
+    description: Response for successful transformation of /convert/lowercase
+    schema:
+      $ref: '#/definitions/ConvertLowerCaseResponse'
+  ConvertUpperCaseResponse:
+    description: Response for successful transformation of /convert/uppercase
+    schema:
+      $ref: '#/definitions/ConvertUpperCaseResponse'
+  ConvertWrapResponse:
+    description: Response for successful transformation of /convert/wrap
+    schema:
+      $ref: '#/definitions/ConvertWrapResponse'
+  EmailDomainCheckResponse:
+    description: Response for successful transformation of /email/domain/check
+    schema:
+      $ref: '#/definitions/EmailDomainCheckResponse'
+  EmailExtendedCheckResponse:
+    description: Response for successful transformation of /email/extended/check
+    schema:
+      $ref: '#/definitions/EmailExtendedCheckResponse'
+  EmailSyntaxCheckResponse:
+    description: Response for successful transformation of /email/syntax/check
+    schema:
+      $ref: '#/definitions/EmailSyntaxCheckResponse'
+  FirstNameGetResponse:
+    description: Response for successful transformation of /firstname/get
+    schema:
+      $ref: '#/definitions/FirstNameGetResponse'
+  GenderExtendedGetResponse:
+    description: Response for successful transformation of /gender/extended/get
+    schema:
+      $ref: '#/definitions/GenderExtendedGetResponse'
+  GenderGetResponse:
+    description: Response for successful transformation of /gender/get
+    schema:
+      $ref: '#/definitions/GenderGetResponse'
+  IbanCheckResponse:
+    description: Response for successful transformation of /iban/check
+    schema:
+      $ref: '#/definitions/IbanCheckResponse'
+  PhoneCountryCodeGetResponse:
+    description: Response for successful transformation of /phone/countrycode/get
+    schema:
+      $ref: '#/definitions/PhoneCountryCodeGetResponse'
+  PhoneFormatResponse:
+    description: Response for successful transformation of /phone/format
+    schema:
+      $ref: '#/definitions/PhoneFormatResponse'
+  PhoneMobileCheckResponse:
+    description: Response for successful transformation of /phone/mobile/check
+    schema:
+      $ref: '#/definitions/PhoneMobileCheckResponse'
+  UrlCheckResponse:
+    description: Response for successful transformation of /url/check
+    schema:
+      $ref: '#/definitions/UrlCheckResponse'
+  VatCheckResponse:
+    description: Response for successful transformation of /vat/check
+    schema:
+      $ref: '#/definitions/VatCheckResponse'
+  VatResolveResponse:
+    description: Response for successful transformation of /vat/resolve
+    schema:
+      $ref: '#/definitions/VatResolveResponse'
+  VatSearchResponse:
+    description: Response for successful transformation of /vat/search
+    schema:
+      $ref: '#/definitions/VatSearchResponse'
+
+  # DEFAULT ERROR RESPONSES
+  ErrorUnauthorized:
+    description: Unauthorized error
+    schema:
+      $ref: '#/definitions/ErrorUnauthorized'
+  ErrorQuotaExceeded:
+    description: Quota exceeded error
+    schema:
+      $ref: '#/definitions/ErrorQuotaExceeded'
+  ErrorForbidden:
+    description: Forbidden error
+    schema:
+      $ref: '#/definitions/ErrorForbidden'
+  ErrorNotFound:
+    description: Not found error
+    schema:
+      $ref: '#/definitions/ErrorNotFound'
+  ErrorNotAllowed:
+    description: Not allowed error
+    schema:
+      $ref: '#/definitions/ErrorNotAllowed'
+  ErrorIncorrectParameters:
+    description: Incorrect parameters error
+    schema:
+      $ref: '#/definitions/ErrorIncorrectParameters'
+  ErrorMissingParameters:
+    description: Missing parameters error
+    schema:
+      $ref: '#/definitions/ErrorMissingParameters'
+  ErrorInternalServerError:
+    description: Unexpected internal server error
+    schema:
+      $ref: '#/definitions/ErrorInternalError'
+  ErrorServiceTemporaryUnavailable:
+    description: Internal server error
+    schema:
+      $ref: '#/definitions/ErrorServiceUnavailable'
