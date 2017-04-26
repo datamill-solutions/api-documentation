@@ -56,6 +56,8 @@ tags:
   description: Transformation functions to format and validate BIC numbers
 - name: Convert
   description: Transformation functions to format and manipulate texts
+- name: DataMill
+  description: All available transformation functions
 - name: Delivery information
   description: Transformation functions to check for undeliverable contacts
 - name: DUNS
@@ -86,6 +88,7 @@ paths:
     post:
       tags:
         - Address
+        - DataMill
       summary: Try to extract house number from street information
       description: |
         Find and extract the house number based on partial address information. The result is an extracted street name, house number and additional house number information (e.g. Apartment, Floor, Room).
@@ -137,6 +140,7 @@ paths:
     post:
       tags:
         - Address
+        - DataMill
       summary:  Reverse address lookup
       description: |
         Resolve an address corresponding to a given geo-coordinate. The result is a single record which matches the given latitude and longitude.
@@ -189,6 +193,7 @@ paths:
     post:
       tags:
         - Address
+        - DataMill
       summary: Lookup physical postal address
       description: |
         Find geo-location based on unstructured (single-line entry, un-qualified) or based on structured (qualified) address information. The result is a single record which matches the given geo-location. The response depends on the data quality of the request. If the request contains too many typos the response keys may be empty.
@@ -296,6 +301,7 @@ paths:
     post:
       tags:
         - Address
+        - DataMill
       summary: Address lookup with multiple possible results
       description: |
         Find multiple geo-locations based on unstructured (single-line entry, un-qualified) address information.
@@ -343,6 +349,7 @@ paths:
     post:
       tags:
         - BIC
+        - DataMill
       summary: Check BIC for spelling
       description: |
         Checks the spelling of a given BIC (Business Identifier Code), also known as SWIFT code which is defined in the ISO 9362. The function does not verify if the BIC really exists, instead the format is checked for validity only.
@@ -387,6 +394,7 @@ paths:
     post:
       tags:
         - DUNS
+        - DataMill
       summary: Get marketing information by DUNS number
       description: |
         Get marketing information about a company (credit rating, PAYDEX score, demographic information, ...) based on the company's D-U-N-S number. In order to get the marketing information each request requires a reason.
@@ -426,6 +434,7 @@ paths:
     post:
       tags:
         - DUNS
+        - DataMill
       summary: Resolve company information by DUNS number
       description: |
         Resolves company information (official name, postal address, annual turnover, number of employees, ...) based on 
@@ -466,6 +475,7 @@ paths:
     post:
       tags:
         - DUNS
+        - DataMill
       summary: Find DUNS number and company information by name
       description: |
         Finds the D-U-N-S number and additional company information by the company's name. Optionally a filter for the headquarters location can be added to get a more accurate response.
@@ -541,6 +551,7 @@ paths:
     post:
       tags:
         - Delivery information
+        - DataMill
       summary: Find moved and deceased contacts
       description: |
         Checks if the postal address of a person identified by its full name is invalid (moved to a new address or deceased).
@@ -616,6 +627,7 @@ paths:
     post:
       tags:
         - Convert
+        - DataMill
       summary: Convert any string to capitalize words
       description: |
         Changes any word of a given text so that the first letter is capitalized and all the others turned into lower case. Special proper names, like "DiCaprio" are detected and ignored.
@@ -660,6 +672,7 @@ paths:
     post:
       tags:
         - Convert
+        - DataMill
       summary: Convert any string to lower case
       description: |
         Converts all letters of any word in a given string in the respective lowercase.
@@ -704,6 +717,7 @@ paths:
     post:
       tags:
         - Convert
+        - DataMill
       summary: Convert any string to upper case
       description: |
         Converts all letters of any word in a given string in the respective capital.
@@ -748,6 +762,7 @@ paths:
     post:
       tags:
         - Convert
+        - DataMill
       summary: Wrap text
       description: |
         Breaks a text into multiple newlines. Each line will be separated by a \r (CR, ASCII 13) and \n (LF, ASCII 10) character. The number of characters a line break will be inserted after can be justified.
@@ -823,6 +838,7 @@ paths:
     post:
       tags:
         - Email
+        - DataMill
       summary: Check email syntax and mail server domain
       description: |
         Checks the spelling of an email address to detect typos and spelling errors.
@@ -869,6 +885,7 @@ paths:
     post:
       tags:
         - Email
+        - DataMill
       summary: Check email syntax, mail server domain and mailbox itself
       description: |
         Checks the spelling of an email address to detect typos and spelling errors. If the email address has a valid
@@ -916,6 +933,7 @@ paths:
     post:
       tags:
         - Email
+        - DataMill
       summary: Check email syntax
       description: |
         Checks the spelling of an email address to detect typos and spelling errors.
@@ -960,6 +978,7 @@ paths:
     post:
       tags:
         - First name
+        - DataMill
       summary: Recognize and extract first names
       description: |
         Detects all first names in a given sting (e.g. a person's name) and extracts them. (Works only with common first names in Germany, Austria and Switzerland)
@@ -1004,6 +1023,7 @@ paths:
     post:
       tags:
         - Gender
+        - DataMill
       summary: Recognize gender by first name (advanced)
       description: Recognizes the gender of a given first name considering country specific peculiarities.
       externalDocs:
@@ -1048,6 +1068,7 @@ paths:
     post:
       tags:
         - Gender
+        - DataMill
       summary: Recognize gender by first name
       description: |
         Recognizes the gender of a given first name. (Works only with common first names in Germany, Austria and Switzerland)
@@ -1092,6 +1113,7 @@ paths:
     post:
       tags:
         - IBAN
+        - DataMill
       summary: Check IBAN for spelling
       description: |
         Checks the spelling, country code and checksum of an IBAN (International Bank Account Number). The IBAN is an internationally agreed system of identifying bank accounts across national borders. The function does not verify if the IBAN really exists, instead the format is checked for validity only.
@@ -1136,6 +1158,7 @@ paths:
     post:
       tags:
         - Phone number
+        - DataMill
       summary: International and national dial prefix
       description: Resolves the national and international dial prefix for a country specified by the given ISO country code.
       externalDocs:
@@ -1172,7 +1195,8 @@ paths:
   "/phone/format":
     post:
       tags:
-      - Phone number
+        - Phone number
+        - DataMill
       summary: Parse, format and validate phone numbers
       description: |
         Validates a given phone number and converts it to the canonical form. In addition the type of the phone number is determined (e.g. "fixed line", "mobile", ...). The number is not checked for existence.
@@ -1252,6 +1276,7 @@ paths:
     post:
       tags:
         - Phone number
+        - DataMill
       summary: Verify mobile phone number
       description: Real time validation of mobile numbers without triggering a call of send a text message.
       externalDocs:
@@ -1296,6 +1321,7 @@ paths:
     post:
       tags:
         - Social media
+        - DataMill
       summary: Retrieve social media data by email address
       description: |
         Get the number of followers and account information of multiple social media platforms from individual email addresses.
@@ -1362,6 +1388,7 @@ paths:
     post:
       tags:
         - URL
+        - DataMill
       summary: Information about web resources
       description: |
         Fetches the resource of a given url and checks if it is available. Only websites using HTTP/HTTPS are allowed. IP addresses and ports other than 80/443 are not permitted and will be ignored.
@@ -1414,6 +1441,7 @@ paths:
     post:
       tags:
         - VAT
+        - DataMill
       summary: Check vat number for correctness
       description: |
         Checks if a given VAT (Value Added Tax) identification number is valid or not. Only VAT numbers of companies within the European Union can be verified.
@@ -1458,6 +1486,7 @@ paths:
     post:
       tags:
         - VAT
+        - DataMill
       summary: Try to resolve VAT number to company information
       description: |
         Resolves company information (company name and postal address) based on the company's VAT (Value Added Tax) identification number. Only VAT numbers of companies within the European Union can be verified and resolved. Some countries have access restrictions and may not deliver the full company information.
@@ -1503,6 +1532,7 @@ paths:
     post:
       tags:
         - VAT
+        - DataMill
       summary: Find VAT number and company information by name
       description: |
         Finds the VAT number and additional company information by the company's name and headquarters location. The function returns multiple results if similar companies are found in the same city.
