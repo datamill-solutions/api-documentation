@@ -6,7 +6,6 @@ swagger: '2.0'
 #####################################################################
 # Info
 #####################################################################
-
 info:
   title: "/data.mill for applications"
   description: |
@@ -30,7 +29,6 @@ info:
 #####################################################################
 # all paths will be relative to the basePath specified
 #####################################################################
-
 host: api.methis.at
 #basePath:
 schemes:
@@ -39,21 +37,18 @@ schemes:
 #####################################################################
 # Request types for the api
 #####################################################################
-
 consumes:
   - multipart/form-data
 
 #####################################################################
 # Response types of the api
 #####################################################################
-
 produces:
   - application/json
 
 #####################################################################
 # tags are used for organizing operations
 #####################################################################
-
 tags:
 - name: Address
   description: Transformation functions to format and validate physical postal addresses
@@ -85,7 +80,6 @@ tags:
 #####################################################################
 # Definition for paths available through this api
 #####################################################################
-
 paths:
 
   "/address/housenumber/extract":
@@ -1978,8 +1972,9 @@ definitions:
       net_worth:
         type: integer
         format: integer
-        example: null
+        example: 15235235
         description: The company's net worth (net value) in its local currency (may be NULL if unset)
+        x-nullable: true
       currency_code:
         type: string
         example: "5080"
@@ -2298,23 +2293,27 @@ definitions:
       net_income:
         type: integer
         format: int64
-        example: null
+        example: 15235235
         description: The company's net income in its local currency (may be NULL if unset)
+        x-nullable: true
       net_income_usd:
         type: integer
         format: int64
-        example: null
+        example: 8154154
         description: The company's net income in US Dollar (may be NULL if unset)
+        x-nullable: true
       net_worth:
         type: integer
         format: int64
-        example: null
+        example: 9121565
         description: The company's net worth (net value) in its local currency (may be NULL if unset)
+        x-nullable: true
       net_worth_usd:
         type: integer
         format: int64
-        example: null
+        example: 8121656
         description: The company's net worth (net value) in US Dollar (may be NULL if unset)
+        x-nullable: true
       currency_code:
         type: string
         example: "5080"
@@ -2363,8 +2362,9 @@ definitions:
       total_employees_physical_address:
         type: integer
         format: int64
-        example: null
+        example: 500
         description: The total number of employees working at the company's headquarters (may be NULL if unset)
+        x-nullable: true
       total_employees_physical_address_indicator:
         type: string
         enum:
@@ -2553,8 +2553,9 @@ definitions:
         description: The company's D-U-N-S number
       duns_number_hq:
         type: string
-        example: null
+        example: "300810020"
         description: Optional the D-U-N-S number of the company's headquarters if this isn't the headquarter
+        x-nullable: true
       phone_number:
         type: string
         example: "+43 662 2202220"
