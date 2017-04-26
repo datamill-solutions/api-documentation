@@ -29,7 +29,7 @@ info:
 #####################################################################
 # all paths will be relative to the basePath specified
 #####################################################################
-host: api.methis.at
+host: api-beta.methis.at
 #basePath:
 schemes:
 - https
@@ -80,6 +80,15 @@ tags:
   description: Transformation functions to format and validate VAT numbers, search companies by VAT of find VAT by company name
 
 #####################################################################
+# Definition of securityDefinitions
+#####################################################################
+securityDefinitions:
+  APISecurity:
+    type: basic
+security:
+  - APISecurity: []
+
+#####################################################################
 # Definition for paths available through this api
 #####################################################################
 paths:
@@ -97,8 +106,6 @@ paths:
         url: https://gateway.methis.at/address/housenumber/extract
       operationId: extractHouseNumber
       parameters:
-        - $ref: '#/parameters/License'
-        - $ref: '#/parameters/Guid'
         - name: street
           in: formData
           description: Free-form text containing the street name and optional the house number including additional house number information. The key is required if housenumber is empty or unset.
@@ -149,8 +156,6 @@ paths:
         url: https://gateway.methis.at/address/locate
       operationId: locateAddress
       parameters:
-        - $ref: '#/parameters/License'
-        - $ref: '#/parameters/Guid'
         - name: latitude
           in: formData
           description: Latitude of the address (use a dot as decimal point)
@@ -205,8 +210,6 @@ paths:
         url: https://gateway.methis.at/address/search
       operationId: searchAddress
       parameters:
-        - $ref: '#/parameters/License'
-        - $ref: '#/parameters/Guid'
         - name: address
           in: formData
           description: |
@@ -312,8 +315,6 @@ paths:
         url: https://gateway.methis.at/address/search/multiple
       operationId: searchAddressMultiple
       parameters:
-        - $ref: '#/parameters/License'
-        - $ref: '#/parameters/Guid'
         - name: address
           in: formData
           description: Free-form text containing address elements (e.g. city, postal code, street, house number). Each element is separated using a whitespace. The order of the elements does not matter.
@@ -358,8 +359,6 @@ paths:
         url: https://gateway.methis.at/bic/check
       operationId: checkBIC
       parameters:
-        - $ref: '#/parameters/License'
-        - $ref: '#/parameters/Guid'
         - name: bic
           in: formData
           description: BIC to be checked
@@ -403,8 +402,6 @@ paths:
         url: https://gateway.methis.at/business-data/duns/rating
       operationId: getDUNSRating
       parameters:
-        - $ref: '#/parameters/License'
-        - $ref: '#/parameters/Guid'
         - $ref: '#/parameters/DunsNumber'
         - $ref: '#/parameters/DunsReasonCode'
       responses:
@@ -444,8 +441,6 @@ paths:
         url: https://gateway.methis.at/business-data/duns/resolve
       operationId: resolveDUNS
       parameters:
-        - $ref: '#/parameters/License'
-        - $ref: '#/parameters/Guid'
         - $ref: '#/parameters/DunsNumber'
         - $ref: '#/parameters/DunsReasonCode'
       responses:
@@ -484,8 +479,6 @@ paths:
         url: https://gateway.methis.at/business-data/duns/search
       operationId: searchDUNS
       parameters:
-        - $ref: '#/parameters/License'
-        - $ref: '#/parameters/Guid'
         - name: company_name
           in: formData
           description: The company name you are looking for or relevant parts of it (may be empty if the duns_number is set)
@@ -562,8 +555,6 @@ paths:
         url: https://gateway.methis.at/business-data/undeliverable-contacts/search
       operationId: searchUndeliverableContact
       parameters:
-        - $ref: '#/parameters/License'
-        - $ref: '#/parameters/Guid'
         - name: first_name
           in: formData
           description: The person's first name
@@ -636,8 +627,6 @@ paths:
         url: https://gateway.methis.at/convert/capitalfirst
       operationId: convertCapitalFirst
       parameters:
-        - $ref: '#/parameters/License'
-        - $ref: '#/parameters/Guid'
         - name: text
           in: formData
           description: Free-form text to be converted.
@@ -681,8 +670,6 @@ paths:
         url: https://gateway.methis.at/convert/lowercase
       operationId: convertLowerCase
       parameters:
-        - $ref: '#/parameters/License'
-        - $ref: '#/parameters/Guid'
         - name: text
           in: formData
           description: Free-form text to be converted.
@@ -726,8 +713,6 @@ paths:
         url: https://gateway.methis.at/convert/uppercase
       operationId: convertUpperCase
       parameters:
-        - $ref: '#/parameters/License'
-        - $ref: '#/parameters/Guid'
         - name: text
           in: formData
           description: Free-form text to be converted.
@@ -771,8 +756,6 @@ paths:
         url: https://gateway.methis.at/convert/wrap
       operationId: convertWrap
       parameters:
-        - $ref: '#/parameters/License'
-        - $ref: '#/parameters/Guid'
         - name: text
           in: formData
           description: Fre-form text to be wrapped.
@@ -849,8 +832,6 @@ paths:
         url: https://gateway.methis.at/email/domain/check
       operationId: checkEmailDomain
       parameters:
-        - $ref: '#/parameters/License'
-        - $ref: '#/parameters/Guid'
         - name: email
           in: formData
           description: The email address to be checked
@@ -897,8 +878,6 @@ paths:
         url: https://gateway.methis.at/email/extended/check
       operationId: checkEmailMailbox
       parameters:
-        - $ref: '#/parameters/License'
-        - $ref: '#/parameters/Guid'
         - name: email
           in: formData
           description: The email address to be checked
@@ -942,8 +921,6 @@ paths:
         url: https://gateway.methis.at/email/syntax/check
       operationId: checkEmailSyntax
       parameters:
-        - $ref: '#/parameters/License'
-        - $ref: '#/parameters/Guid'
         - name: email
           in: formData
           description: The email address to be checked
@@ -987,8 +964,6 @@ paths:
         url: https://gateway.methis.at/firstname/get
       operationId: getFirstNames
       parameters:
-        - $ref: '#/parameters/License'
-        - $ref: '#/parameters/Guid'
         - name: name
           in: formData
           description: Full name to detect all first names and extract them
@@ -1031,8 +1006,6 @@ paths:
         url: https://gateway.methis.at/gender/extended/get
       operationId: getGenderExtended
       parameters:
-        - $ref: '#/parameters/License'
-        - $ref: '#/parameters/Guid'
         - name: firstname
           in: formData
           description: First name to recognize gender.
@@ -1077,8 +1050,6 @@ paths:
         url: https://gateway.methis.at/gender/get
       operationId: getGender
       parameters:
-        - $ref: '#/parameters/License'
-        - $ref: '#/parameters/Guid'
         - name: firstname
           in: formData
           description: First name to recognize gender.
@@ -1122,8 +1093,6 @@ paths:
         url: https://gateway.methis.at/iban/check
       operationId: checkIBAN
       parameters:
-        - $ref: '#/parameters/License'
-        - $ref: '#/parameters/Guid'
         - name: iban
           in: formData
           description: IBAN to be checked.
@@ -1166,8 +1135,6 @@ paths:
         url: https://gateway.methis.at/phone/countrycode/get
       operationId: getPhoneCountryCode
       parameters:
-        - $ref: '#/parameters/License'
-        - $ref: '#/parameters/Guid'
         - $ref: '#/parameters/CountryCode'
       responses:
         200:
@@ -1205,8 +1172,6 @@ paths:
         url: https://gateway.methis.at/phone/format
       operationId: formatPhoneNumber
       parameters:
-        - $ref: '#/parameters/License'
-        - $ref: '#/parameters/Guid'
         - name: phonenumber
           in: formData
           description: Phone number to be formatted and validated
@@ -1284,8 +1249,6 @@ paths:
         url: https://gateway.methis.at/phone/mobile/check
       operationId: checkMobilePhone
       parameters:
-        - $ref: '#/parameters/License'
-        - $ref: '#/parameters/Guid'
         - name: phonenumber
           in: formData
           description: Mobile phone number to be verified.
@@ -1352,8 +1315,6 @@ paths:
         url: https://gateway.methis.at/social-media/activities/get
       operationId: getSocialMediaActivities
       parameters:
-        - $ref: '#/parameters/License'
-        - $ref: '#/parameters/Guid'
         - name: email
           in: formData
           description: The person's email address being checked on mentioned social media plattforms
@@ -1397,8 +1358,6 @@ paths:
         url: https://gateway.methis.at/url/check
       operationId: checkUrl
       parameters:
-        - $ref: '#/parameters/License'
-        - $ref: '#/parameters/Guid'
         - name: url
           in: formData
           description: The url to be checked (e.g. any website)
@@ -1450,8 +1409,6 @@ paths:
         url: https://gateway.methis.at/vat/check
       operationId: checkVAT
       parameters:
-        - $ref: '#/parameters/License'
-        - $ref: '#/parameters/Guid'
         - name: vatnumber
           in: formData
           description: The VAT number of a company within the European Union
@@ -1495,8 +1452,6 @@ paths:
         url: https://gateway.methis.at/vat/resolve
       operationId: resolveVAT
       parameters:
-        - $ref: '#/parameters/License'
-        - $ref: '#/parameters/Guid'
         - name: vatnumber
           in: formData
           description: The VAT number of a company within the European Union
@@ -1541,8 +1496,6 @@ paths:
         url: https://gateway.methis.at/vat/search
       operationId: searchVAT
       parameters:
-        - $ref: '#/parameters/License'
-        - $ref: '#/parameters/Guid'
         - name: company
           in: formData
           description: The name of an company. You may enter the fully qualified name or only partial information.
