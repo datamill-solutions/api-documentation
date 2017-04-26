@@ -385,7 +385,7 @@ paths:
         503:
           $ref: '#/responses/ErrorServiceTemporaryUnavailable'
       deprecated: false
-      
+
   "/business-data/duns/rating":
     post:
       tags:
@@ -424,14 +424,14 @@ paths:
         503:
           $ref: '#/responses/ErrorServiceTemporaryUnavailable'
       deprecated: false
-      
+
   "/business-data/duns/resolve":
     post:
       tags:
         - DUNS
       summary: Resolve company information by DUNS number
       description: |
-        Resolves company information (official name, postal address, annual turnover, number of employees, ...) based on 
+        Resolves company information (official name, postal address, annual turnover, number of employees, ...) based on
         the company's D-U-N-S number. In order to get the company information each request requires a reason.
       externalDocs:
         description: More information
@@ -1909,8 +1909,9 @@ definitions:
       net_worth:
         type: integer
         format: integer
-        example: null
+        example: 1562532
         description: The company's net worth (net value) in its local currency (may be NULL if unset)
+        x-nullable: true
       currency_code:
         type: string
         example: "5080"
@@ -2229,23 +2230,27 @@ definitions:
       net_income:
         type: integer
         format: int64
-        example: null
+        example: 9123123
         description: The company's net income in its local currency (may be NULL if unset)
+        x-nullable: true
       net_income_usd:
         type: integer
         format: int64
-        example: null
+        example: 8123123
         description: The company's net income in US Dollar (may be NULL if unset)
+        x-nullable: true
       net_worth:
         type: integer
         format: int64
-        example: null
+        example: 1532532
         description: The company's net worth (net value) in its local currency (may be NULL if unset)
+        x-nullable: true
       net_worth_usd:
         type: integer
         format: int64
-        example: null
+        example: 1432532
         description: The company's net worth (net value) in US Dollar (may be NULL if unset)
+        x-nullable: true
       currency_code:
         type: string
         example: "5080"
@@ -2294,8 +2299,9 @@ definitions:
       total_employees_physical_address:
         type: integer
         format: int64
-        example: null
+        example: 500
         description: The total number of employees working at the company's headquarters (may be NULL if unset)
+        x-nullable: true
       total_employees_physical_address_indicator:
         type: string
         enum:
@@ -2484,8 +2490,9 @@ definitions:
         description: The company's D-U-N-S number
       duns_number_hq:
         type: string
-        example: null
+        example: "300810020"
         description: Optional the D-U-N-S number of the company's headquarters if this isn't the headquarter
+        x-nullable: true
       phone_number:
         type: string
         example: "+43 662 2202220"
@@ -3419,7 +3426,7 @@ definitions:
   ErrorInternalError:
     title: "Error - Internal server error"
     description: An internal server error occurred. Please try again later.
-    example:
+    example: 
     type: object
 
   ErrorServiceUnavailable:
