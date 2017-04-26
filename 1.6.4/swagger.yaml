@@ -3449,7 +3449,6 @@ definitions:
 # Responses
 #####################################################################
 responses:
-
   AddressHouseNumberExtractResponse:
     description: Response for successful transformation of /address/housenumber/extract
     schema:
