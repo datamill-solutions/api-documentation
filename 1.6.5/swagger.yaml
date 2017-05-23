@@ -3508,8 +3508,7 @@ definitions:
         type: integer
         format: int64
         example: -1
-        description: Number of bytes to download from the resource (-1 means no information available)
-        deprecated: true
+        description: Number of bytes to download from the resource (-1 means no information available; will be removed in future versions / deprecated)
       content_type:
         type: string
         example: "text/html; charset=UTF-8"
