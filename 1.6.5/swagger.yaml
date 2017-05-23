@@ -100,7 +100,9 @@ paths:
         - DataMill
       summary: Try to extract house number from street information
       description: |
-        Find and extract the house number based on partial address information. The result is an extracted street name, house number and additional house number information (e.g. Apartment, Floor, Room).
+        Find and extract the house number based on partial address information. The result is an extracted street name,
+        house number and additional house number information (e.g. Apartment, Floor, Room). It is necessary to provide street
+        and housenumber, either in street field or separated in street and house number field.
       externalDocs:
         description: More information
         url: https://gateway.methis.at/address/housenumber/extract
@@ -1641,6 +1643,7 @@ parameters:
   DunsReasonCode:
     name: reason_code
     in: formData
+    # TODO add enum for reason codes
     description: |
       Unique code describing the reason why you like to get detailed information about the specified company. Possible codes are:
 
