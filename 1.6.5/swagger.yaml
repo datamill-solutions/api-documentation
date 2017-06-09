@@ -1282,6 +1282,72 @@ paths:
           $ref: '#/responses/ErrorServiceTemporaryUnavailable'
       deprecated: false
 
+  "/phonetic/code/get":
+    post:
+      tags:
+        - Convert
+        - DataMill
+      summary: Calculate phonetic codes of a given text
+      description: |
+        Get the phonetic code of a given text. Currently three phonetic algorithms are available:
+
+        * **Soundex** (algorithm code 1)
+
+        * **Colcogne Phonetic** (algorithm code 2)
+
+        * **Metaphon** (algorithm code 3)
+      externalDocs:
+        description: More information
+        url: https://gateway.methis.at/phonetic/code/get
+      operationId: getPhoneticCode
+      parameters:
+        - name: text
+          in: formData
+          description: |
+            The text which should be converted. Each word will be converted separatly and generate a single entry in the result.
+          required: true
+          type: string
+          minLength: 1
+          maxLength: 2048
+        - name: phonetic_algorithm
+          in: formData
+          description: |
+            The phonetic algorithm which should be applied. If no algorithm code will be provided **Soundex** will be used. Codes:
+
+            * 1 = Soundex
+
+            * 2 = Colcogne Phonetic
+
+            * 3 = Metaphon
+          required: false
+          type: integer
+          enum:
+            - 1
+            - 2
+            - 3
+      responses:
+        200:
+          $ref: '#/responses/PhoneticCodeGetResponse'
+        401:
+          $ref: '#/responses/ErrorUnauthorized'
+        402:
+          $ref: '#/responses/ErrorQuotaExceeded'
+        403:
+          $ref: '#/responses/ErrorForbidden'
+        404:
+          $ref: '#/responses/ErrorNotFound'
+        405:
+          $ref: '#/responses/ErrorNotAllowed'
+        412:
+          $ref: '#/responses/ErrorIncorrectParameters'
+        428:
+          $ref: '#/responses/ErrorMissingParameters'
+        500:
+          $ref: '#/responses/ErrorInternalServerError'
+        503:
+          $ref: '#/responses/ErrorServiceTemporaryUnavailable'
+      deprecated: false
+
   "/social-media/activities/get":
     post:
       tags:
@@ -3064,6 +3130,22 @@ definitions:
           **unknown**: the phone number could not be verified
     type: object
 
+  # /phonetic/code/get Response
+  PhoneticCodeGetResponse:
+    title: "/phonetic/code/get Response"
+    description: Response of successful transformation request for /phonetic/code/get
+    required:
+      - phonetic_codes
+    properties:
+      phonetic_codes:
+        type: array
+        items:
+          type: string
+          example: "T100"
+        description: |
+          The phonetic codes for each word of the input text
+    type: object
+
   # /social-media/activities/get Response
   SocialMediaActivitiesGetResponse:
     title: "/social-media/activities/get Response"
@@ -3959,6 +4041,10 @@ responses:
     description: Response for successful transformation of /phone/mobile/check
     schema:
       $ref: '#/definitions/PhoneMobileCheckResponse'
+  PhoneticCodeGetResponse:
+    description: Response for successful transformation of /phonetic/code/get
+    schema:
+      $ref: '#/definitions/PhoneticCodeGetResponse'
   SocialMediaActivitiesGetResponse:
     description: Response for successful transformation of /social-media/activities/get
     schema:
