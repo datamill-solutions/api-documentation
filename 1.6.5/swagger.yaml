@@ -29,7 +29,7 @@ info:
 #####################################################################
 # all paths will be relative to the basePath specified
 #####################################################################
-host: api-beta.methis.at
+host: api.methis.at
 #basePath:
 schemes:
 - https
