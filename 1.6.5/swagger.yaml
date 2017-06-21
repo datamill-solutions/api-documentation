@@ -1293,7 +1293,7 @@ paths:
 
         * **Soundex** (algorithm code 1)
 
-        * **Colcogne Phonetic** (algorithm code 2)
+        * **Cologne Phonetic** (algorithm code 2)
 
         * **Metaphon** (algorithm code 3)
       externalDocs:
@@ -1316,7 +1316,7 @@ paths:
 
             * 1 = Soundex
 
-            * 2 = Colcogne Phonetic
+            * 2 = Cologne Phonetic
 
             * 3 = Metaphon
           required: false
